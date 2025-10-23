@@ -2,10 +2,9 @@
 
 # Liste der benötigten Pakete
 required_packages <- c("here",    
-                       "tidyverse",
-                       "remp",
-                       "correlation",
-                       "see"
+                       "tidyverse"#,
+                       #"correlation",
+                       #"see"
                        )
 
 load_packages <- function(packages) 
