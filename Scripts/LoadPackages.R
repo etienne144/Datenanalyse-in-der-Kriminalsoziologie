@@ -1,8 +1,11 @@
 # LoadPackages.R
 
 # Liste der benötigten Pakete
-required_packages <- c("here"#,    
-                       #"readxl"
+required_packages <- c("here",    
+                       "tidyverse",
+                       "remp",
+                       "correlation",
+                       "see"
                        )
 
 load_packages <- function(packages) 
