@@ -31,21 +31,27 @@ calculate_descriptive_stats <- function(column_name)
 # ************************************************************
 # 2. Master-Funktion für die Iteration
 # ************************************************************
-run_descriptive_analysis <- function(spalten_liste) {
-  
+run_descriptive_analysis <- function(spalten_liste) 
+{
+  alle_ergebnisse <- list() # Für die Speicherung der Ergebnisse
   # 1. Iteration über die Liste der "spalten_von_interesse" aus MAIN.R
-  deskriptive_ergebnisse <- spalten_liste |>
-    purrr::map(
-      .f = ~ calculate_descriptive_stats(column_name = !!rlang::sym(.x))
-    )
-  # 2. Die Liste zu einem einzigen, sauberen Data Frame kombinieren
-  all_stats_df <- deskriptive_ergebnisse |>
-    purrr::list_rbind() |>
-    dplyr::mutate(Partei = spalten_liste, .before = 1) 
+  for (i in seq_along(spalten_liste)) 
+  {
+    spalten_name <- spalten_liste[i]
+    spalte_als_symbol <- rlang::sym(spalten_name) 
+    stats_df <- calculate_descriptive_stats(column_name = !!spalte_als_symbol)
+    alle_ergebnisse[[i]] <- stats_df # Ergebnisse in die Liste einfügen
+  }
+  # 2. Die Liste zu einem einzigen, Data Frame kombinieren
+  all_stats_df <- do.call(rbind, alle_ergebnisse)
+  # 3. Spaltennamen hinzufügen
+  all_stats_df$Spalte <- spalten_liste
+  all_stats_df <- all_stats_df[, c("Spalte", names(all_stats_df)[-length(names(all_stats_df))])]
   
-  # 3. Finale zusammengefasste Tabelle anzeigen
+  
+  # 3. Finale zusammengefasste Tabelle anzeigen (prüft global PRINT_RESULTS)
   if (PRINT_RESULTS_TOTAL) {
-    cat("\nZusammengefasste deskriptive Statistik aller Spalten\n")
+    cat("\nZusammengefasste UNIVARIATE Analyse aller Spalten von interesse\n")
     print(all_stats_df)
   }
   
