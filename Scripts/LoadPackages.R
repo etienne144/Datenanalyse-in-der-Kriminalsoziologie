@@ -27,5 +27,8 @@ load_packages <- function(packages)
 # Führe die Funktion aus
 load_packages(required_packages)
 
+#Load die anderen Scripts
+source("Scripts/DeskriptiveStatistik.R")
+
 # Gib eine kurze Meldung aus, dass die Pakete geladen wurden
 print("Alle benötigten Pakete wurden geladen.")
