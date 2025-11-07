@@ -11,3 +11,14 @@
 #Folie 22 die wichtigsten dplyr-Funktionen
 
 #Folie 45 alluvil Plots für ordinl und nominl
+#getterplot
+
+#wichtig aV und UV nicht zusmmen darstellen
+
+#Linke
+#univrit stndrtwerte, box
+#ost west
+#Bundesländer? ???
+
+#Bildung, Einkommen, arbeitslosenquote? 
+#Fließdings mit einkommen und ost west

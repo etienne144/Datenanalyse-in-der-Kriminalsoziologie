@@ -3,8 +3,8 @@
 # Liste der benötigten Pakete
 required_packages <- c("here",    
                        "tidyverse",
-                       "ggplot2"#,
-                       #"see"
+                       "ggplot2",
+                       "ggalluvial"
                        )
 
 load_packages <- function(packages) 
