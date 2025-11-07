@@ -1,4 +1,5 @@
 # DeskriptiveStatistik.R
+
 # ************************************************************
 # 1. Funktion für EINZELNE Spalten (Core-Logik)
 # ************************************************************
@@ -28,12 +29,14 @@ calculate_descriptive_stats <- function(column_name)
   }
   invisible(stats_result)
 }
+
 # ************************************************************
 # 2. Master-Funktion für die Iteration
 # ************************************************************
 run_descriptive_analysis <- function(spalten_liste) 
 {
   alle_ergebnisse <- list() # Für die Speicherung der Ergebnisse
+  
   # 1. Iteration über die Liste der "spalten_von_interesse" aus MAIN.R
   for (i in seq_along(spalten_liste)) 
   {
@@ -44,18 +47,19 @@ run_descriptive_analysis <- function(spalten_liste)
   }
   # 2. Die Liste zu einem einzigen, Data Frame kombinieren
   all_stats_df <- do.call(rbind, alle_ergebnisse)
+  
   # 3. Spaltennamen hinzufügen
   all_stats_df$Spalte <- spalten_liste
   all_stats_df <- all_stats_df[, c("Spalte", names(all_stats_df)[-length(names(all_stats_df))])]
   
-  
-  # 3. Finale zusammengefasste Tabelle anzeigen (prüft global PRINT_RESULTS)
+  # 4. Finale zusammengefasste Tabelle anzeigen (prüft global PRINT_RESULTS)
   if (PRINT_RESULTS_TOTAL) {
     cat("\nZusammengefasste UNIVARIATE Analyse aller Spalten von interesse\n")
     print(all_stats_df)
   }
   
-  # 4. MAIN.R erhält die zusammengefasste Tabelle
+  # 5. MAIN.R erhält die zusammengefasste Tabelle
+  cat("\nUNIVARIATE Analyse abgeschlossen\n")
   return(all_stats_df)
 }
 # ************************************************************
@@ -104,7 +108,7 @@ calculate_quartile_descriptive_stats <- function(column_name, quartile_var)
     dplyr::mutate(QuartilGruppe = dplyr::ntile({{ quartile_var }}, n = 4))
   
   # --- PLOT-GENERIERUNG (NEU) ---
-  if (exists("PLOT_RESULTS") && PLOT_RESULTS) {
+  if (exists("PRINT_PLOT_RESULTS") && PRINT_PLOT_RESULTS) {
     # Erstelle Boxplot, das die Rohdaten aus 'data_gegruppert' nutzt
     boxplot_plot <- ggplot2::ggplot(data_gegruppert, 
                                     ggplot2::aes(x = factor(QuartilGruppe), 
@@ -112,7 +116,7 @@ calculate_quartile_descriptive_stats <- function(column_name, quartile_var)
       ggplot2::geom_boxplot(fill = "salmon", alpha = 0.6) +
       ggplot2::labs(
         title = paste0("Verteilung von ", column_name_str, " nach Quartilen von ", quartile_var_str),
-        x = paste0("Quartilsgruppe der Variablen: ", quartile_var_str, " (1 = niedrigster Wert)"),
+        x = paste0("Quartilsgruppe: ", quartile_var_str, " (1 = niedrigster Wert)"),
         y = column_name_str
       ) +
       ggplot2::theme_minimal()
