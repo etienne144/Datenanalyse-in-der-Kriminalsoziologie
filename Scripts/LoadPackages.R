@@ -2,8 +2,8 @@
 
 # Liste der benötigten Pakete
 required_packages <- c("here",    
-                       "tidyverse"#,
-                       #"correlation",
+                       "tidyverse",
+                       "ggplot2"#,
                        #"see"
                        )
 
