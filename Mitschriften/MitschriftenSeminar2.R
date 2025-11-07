@@ -15,10 +15,15 @@
 
 #wichtig aV und UV nicht zusmmen darstellen
 
+
+#ToDos
 #Linke
 #univrit stndrtwerte, box
 #ost west
 #Bundesländer? ???
 
-#Bildung, Einkommen, arbeitslosenquote? 
+
+
+#Bildung, Einkommen, arbeitslosenquote, usländerprozent? 
 #Fließdings mit einkommen und ost west
+#Bivriat Einkommen, Bildung
