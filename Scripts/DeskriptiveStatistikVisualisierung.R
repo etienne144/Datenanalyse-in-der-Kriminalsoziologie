@@ -32,14 +32,15 @@ plot_univariate_histogram <- function(column_name)
   
     invisible(NULL)
 }
+
 # ************************************************************
 # 2. Master-Funktion für die Iteration
 # ************************************************************
 run_univariate_plotting <- function(spalten_liste)
 {
-  # Steuerung über die Hauptvariable PLOT_RESULTS
-  if (!(exists("PLOT_RESULTS") && PLOT_RESULTS)) {
-    message("PLOT_RESULTS ist FALSE. Visualisierung wurde uebersprungen.")
+  # Läuft nur wenn PRINT_PLOT_RESULTS
+  if (!(exists("PRINT_PLOT_RESULTS") && PLOT_RESULTS)) {
+    cat("PRINT_PLOT_RESULTS ist FALSE. Visualisierung wurde uebersprungen.")
     return(invisible(NULL))
   }
   
@@ -49,10 +50,11 @@ run_univariate_plotting <- function(spalten_liste)
     spalten_name <- spalten_liste[i]
     spalte_als_symbol <- rlang::sym(spalten_name) 
     
-    # Aufruf der Plot-Funktion ohne Übergabe des Faktors
+    # Aufruf der Plot-Funktion
     plot_univariate_histogram(column_name = !!spalte_als_symbol)
   }
   
+  #Sendet Log über Erfolg
   cat("\n Univariate Histogramme wurden erstellt \n")
   return(invisible(NULL))
 }

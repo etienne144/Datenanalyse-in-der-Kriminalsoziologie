@@ -28,3 +28,4 @@
 #Fließdings mit einkommen und ost west
 #Bivriat Einkommen, Bildung
 #Arbeitslosenqote und Bildung könnten wir aufschlüsseln
+#Geburssaldo und wadersaldo

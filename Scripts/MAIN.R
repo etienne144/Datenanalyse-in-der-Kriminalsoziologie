@@ -43,6 +43,8 @@ afd_ost_stats <- calculate_bivariat_descriptive_stats(
   column_name = linke_prop, 
   group_by_var = ost
 )
+
+#eventuell brauchen wir nicht
 afd_quartile_stats <- calculate_quartile_descriptive_stats(
   column_name = bip_je_einwohner, 
   quartile_var = ausl_proz 
