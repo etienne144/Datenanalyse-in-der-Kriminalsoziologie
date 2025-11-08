@@ -1,154 +1,88 @@
 # DeskriptiveStatistik.R
 
 # ************************************************************
-# 1. Funktion für EINZELNE Spalten (Core-Logik)
+# 1. Kernfunktion: Berechnung der univariaten deskriptiven Statistik
 # ************************************************************
+#' Berechnet die zentralen deskriptiven Statistiken (Mittelwert, Median, Streuung, Min/Max)
+#' für eine einzelne metrische Variable.
+#'
+#' Diese Funktion wendet 'dplyr::summarise()' direkt auf eine Variable an, um deren
+#' Verteilung in der Gesamtstichprobe zu beschreiben. Die Funktion arbeitet mit der
+#' globalen Variable 'data'.
+#'
+#' @param column_name Die metrische Spalte, die analysiert werden soll. Wird mit Tidy Evaluation übergeben.
+#' @return Ein Data Frame mit den berechneten deskriptiven Statistiken für die Spalte. Unsichtbare Rückgabe (invisible).
+#' @export
 calculate_descriptive_stats <- function(column_name)
 {
-  # 1. Spaltennamen als String für die Ausgabe erfassen
+  # 1. Erfassung des Spaltennamens als Klartext-String für die Ausgabe (Konsolenmeldung)
   column_name_str <- rlang::as_label(rlang::enquo(column_name))
   
-  # 2. Berechnung durchführen und Ergebnis zuweisen
+  # 2. Berechnung der Kennzahlen mithilfe von dplyr::summarise()
   stats_result <- data |>
     dplyr::summarise(
-      Mean = mean({{ column_name }}, na.rm = TRUE),
-      Min = min({{ column_name }}, na.rm = TRUE),
-      Quartil25 = quantile({{ column_name }}, 0.25, na.rm = TRUE),
+      Mittelwert = mean({{ column_name }}, na.rm = TRUE),
+      Minimum = min({{ column_name }}, na.rm = TRUE),
+      Quartil_25 = quantile({{ column_name }}, 0.25, na.rm = TRUE),
       Median = median({{ column_name }}, na.rm = TRUE),
-      Quartil75 = quantile({{ column_name }}, 0.75, na.rm = TRUE),
-      Max = max({{ column_name }}, na.rm = TRUE),
-      SD = sd({{ column_name }}, na.rm = TRUE),
+      Quartil_75 = quantile({{ column_name }}, 0.75, na.rm = TRUE),
+      Maximum = max({{ column_name }}, na.rm = TRUE),
+      Std_Abweichung = sd({{ column_name }}, na.rm = TRUE),
       .groups = 'drop'
     )
   
-  # 3. Steuerung der Ausgabe
-  if (PRINT_RESULTS_SINGLE)
+  # 3. Steuerung der Ausgabe: Drucken der Einzelergebnisse, falls Ausgabe aktiviert
+  if (IS_TABLE_OUTPUT_ENABLED)
   {
-    cat("\nUNIVARIATE Analyse:", column_name_str, "\n") 
+    cat("\nUNIVARIATE Analyse (Einzelvariable):", column_name_str, "\n")
     print(stats_result)
   }
   invisible(stats_result)
 }
 
 # ************************************************************
-# 2. Master-Funktion für die Iteration
+# 2. Iterationsfunktion: Führt die univariaten Analysen aus
 # ************************************************************
+#' Führt die univariate deskriptive Analyse für eine Liste von Variablen aus.
+#'
+#' Nutzt eine klassische 'for'-Schleife zur Iteration (anfängerfreundlich), ruft
+#' 'calculate_descriptive_stats()' für jede Variable auf und fasst die Ergebnisse
+#' am Ende in einem Data Frame zusammen.
+#'
+#' @param spalten_liste Vektor von Strings: Die metrischen Spalten, die analysiert werden sollen.
+#' @return Ein zusammengefasster Data Frame mit den univariaten Ergebnissen aller analysierten Spalten.
+#' @export
 run_descriptive_analysis <- function(spalten_liste) 
 {
-  alle_ergebnisse <- list() # Für die Speicherung der Ergebnisse
+  alle_ergebnisse <- list() # 1. Initialisierung: Liste für die Speicherung der Einzel-Ergebnis-DFs
   
-  # 1. Iteration über die Liste der "spalten_von_interesse" aus MAIN.R
+  # 2. Iteration: Geht nacheinander alle Spaltennamen in der Liste durch
   for (i in seq_along(spalten_liste)) 
   {
     spalten_name <- spalten_liste[i]
+    
+    # Konvertierung des Strings in ein R-Objekt (Symbol) für die Übergabe an die Kern-Funktion
     spalte_als_symbol <- rlang::sym(spalten_name) 
+    
+    # Aufruf der Kern-Funktion
     stats_df <- calculate_descriptive_stats(column_name = !!spalte_als_symbol)
-    alle_ergebnisse[[i]] <- stats_df # Ergebnisse in die Liste einfügen
+    
+    alle_ergebnisse[[i]] <- stats_df # Speichert das Ergebnis in der Liste
   }
-  # 2. Die Liste zu einem einzigen, Data Frame kombinieren
+  
+  # 3. Kombination: Die Liste der Data Frames zu einem einzigen Data Frame zusammenfügen
   all_stats_df <- do.call(rbind, alle_ergebnisse)
   
-  # 3. Spaltennamen hinzufügen
+  # 4. Spaltennamen hinzufügen und umsortieren: Die Spalte 'Spalte' wird vorne eingefügt
   all_stats_df$Spalte <- spalten_liste
   all_stats_df <- all_stats_df[, c("Spalte", names(all_stats_df)[-length(names(all_stats_df))])]
   
-  # 4. Finale zusammengefasste Tabelle anzeigen (prüft global PRINT_RESULTS)
-  if (PRINT_RESULTS_TOTAL) {
-    cat("\nZusammengefasste UNIVARIATE Analyse aller Spalten von interesse\n")
+  # 5. Finale Ausgabe und Rückgabe: Anzeige nur, wenn die globale Steuerungsvariable TRUE ist
+  if (IS_TABLE_OUTPUT_ENABLED) {
+    cat("\nZusammengefasste UNIVARIATE Analyse aller Spalten von Interesse\n")
     print(all_stats_df)
   }
   
-  # 5. MAIN.R erhält die zusammengefasste Tabelle
   cat("\nUNIVARIATE Analyse abgeschlossen\n")
   return(all_stats_df)
-}
-# ************************************************************
-# 3. Funktion für BIVARIATE
-# ************************************************************
-#neu muss noch überarbeitet werden
-
-calculate_bivariat_descriptive_stats <- function(column_name, group_by_var)
-{
-  # 1. Spaltennamen als String für die Ausgabe erfassen
-  column_name_str <- rlang::as_label(rlang::enquo(column_name))
-  group_by_str <- rlang::as_label(rlang::enquo(group_by_var))
-  
-  # 2. Berechnung durchführen und Ergebnis zuweisen
-  stats_result <- data |>
-    dplyr::group_by({{ group_by_var }}) |>
-    dplyr::summarise(
-      Mean = mean({{ column_name }}, na.rm = TRUE),
-      Min = min({{ column_name }}, na.rm = TRUE),
-      Quartil25 = quantile({{ column_name }}, 0.25, na.rm = TRUE),
-      Median = median({{ column_name }}, na.rm = TRUE),
-      Quartil75 = quantile({{ column_name }}, 0.75, na.rm = TRUE),
-      Max = max({{ column_name }}, na.rm = TRUE),
-      SD = sd({{ column_name }}, na.rm = TRUE),
-      .groups = 'drop'
-    )
-  
-  # 3. Steuerung der Ausgabe
-  if (PRINT_RESULTS_SINGLE)
-  {
-    cat("\nBIVARIATE Analyse:", column_name_str, " gruppiert nach ", group_by_str,"\n") 
-    print(stats_result)
-  }
-  invisible(stats_result)
-}
-
-calculate_quartile_descriptive_stats <- function(column_name, quartile_var)
-{
-  # 1. Spaltennamen als String für die Ausgabe erfassen
-  column_name_str <- rlang::as_label(rlang::enquo(column_name))
-  quartile_var_str <- rlang::as_label(rlang::enquo(quartile_var))
-  
-  # --- DATENVORBEREITUNG ---
-  # Erstelle Data Frame mit der Quartilgruppe (FÜR PLOT UND SUMMARISE)
-  data_gegruppert <- data |> 
-    dplyr::mutate(QuartilGruppe = dplyr::ntile({{ quartile_var }}, n = 4))
-  
-  # --- PLOT-GENERIERUNG (NEU) ---
-  if (exists("PRINT_PLOT_RESULTS") && PRINT_PLOT_RESULTS) {
-    # Erstelle Boxplot, das die Rohdaten aus 'data_gegruppert' nutzt
-    boxplot_plot <- ggplot2::ggplot(data_gegruppert, 
-                                    ggplot2::aes(x = factor(QuartilGruppe), 
-                                                 y = {{ column_name }})) + # Nutzt Tidy-Eval für die Y-Achse
-      ggplot2::geom_boxplot(fill = "salmon", alpha = 0.6) +
-      ggplot2::labs(
-        title = paste0("Verteilung von ", column_name_str, " nach Quartilen von ", quartile_var_str),
-        x = paste0("Quartilsgruppe: ", quartile_var_str, " (1 = niedrigster Wert)"),
-        y = column_name_str
-      ) +
-      ggplot2::theme_minimal()
-    
-    # Die Grafik direkt anzeigen
-    print(boxplot_plot)
-  }
-  
-  # --- STATISTIK-BERECHNUNG ---
-  # Berechnung basiert nun auf dem temporären Data Frame
-  stats_result <- data_gegruppert |>
-    dplyr::group_by(QuartilGruppe) |> # Nutzt die bereits erstellte Spalte
-    
-    dplyr::summarise(
-      N = dplyr::n(), 
-      # ... (restliche Statistik wie gehabt) ...
-      Mean = mean({{ column_name }}, na.rm = TRUE),
-      Median = median({{ column_name }}, 0.50, na.rm = TRUE),
-      SD = sd({{ column_name }}, na.rm = TRUE),
-      Min = min({{ column_name }}, na.rm = TRUE),
-      Quartil25 = quantile({{ column_name }}, 0.25, na.rm = TRUE),
-      Quartil75 = quantile({{ column_name }}, 0.75, na.rm = TRUE),
-      Max = max({{ column_name }}, na.rm = TRUE),
-      Mean_Quartil_Var = mean({{ quartile_var }}, na.rm = TRUE), 
-      .groups = 'drop' 
-    )
-  
-  # 3. Steuerung der Tabellen-Ausgabe
-  if (exists("PRINT_RESULTS_SINGLE") && PRINT_RESULTS_SINGLE)
-  {
-    cat("\n--- BIVARIATE Analyse: ", column_name_str, " gruppiert nach Quartilen von ", quartile_var_str, " ---\n") 
-    print(stats_result)
-  }
-  invisible(stats_result)
 }

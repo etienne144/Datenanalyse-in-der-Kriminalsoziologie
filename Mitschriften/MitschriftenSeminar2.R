@@ -15,13 +15,15 @@
 
 #wichtig aV und UV nicht zusmmen darstellen
 
+#Herrausforderungen
+#bildung_hoch erstellen
+
 
 #ToDos
 #Linke
 #univrit stndrtwerte, box
 #ost west
 #Bundesländer? ???
-
 
 
 #Bildung, Einkommen, arbeitslosenquote, usländerprozent? 
