@@ -45,7 +45,7 @@ IS_PLOT_OUTPUT_ENABLED <- TRUE
 
 # Faktor zur Skalierung der Klassenanzahl (Bins) in Histogrammen.
 # Je höher der Wert, desto feiner die Darstellung (mehr Säulen).
-HISTOGRAM_BINS_FAKTOR <- 4 
+HISTOGRAM_BINS_FAKTOR <- 5 
 
 # 2.1.1 UNIVARIATE Analyse
 # Hier könnten die Aufrufe für die univariate Analyse folgen, falls sie nicht auskommentiert sind:

@@ -12,6 +12,7 @@ KLARNAMEN <- c(
   "bildung_hoch" = "hoch",
   "afd_prop" = "AfD",
   "linke_prop" = "Die Linke",
+  "ausl_proz" = "Ausländerquote",
   "einkommen" = "Durchschn. Einkommen",
   "arblQuote_gesamt" = "gesamt",
   "arblQuote_frauen" = "Frauen",

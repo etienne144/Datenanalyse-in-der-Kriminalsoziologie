@@ -10,7 +10,6 @@
 #' @param target_variables Vektor von Strings: Die metrischen Spalten, die in einem Plot zusammengefasst werden.
 #' @param grouping_variable String: Die kategoriale Spalte zur Gruppierung.
 #' @return Der erzeugte Plot wird direkt ausgegeben; die Funktion gibt unsichtbar NULL zurück.
-#' @export
 plot_multiple_boxplots <- function(df, target_variables, grouping_variable, analyse_name_str)
 {
   # 1. Daten umstrukturieren (Pivot: Von "breit" nach "lang")

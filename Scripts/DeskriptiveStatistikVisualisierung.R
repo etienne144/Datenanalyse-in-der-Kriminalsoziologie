@@ -16,6 +16,19 @@ plot_univariate_histogram <- function(column_name)
 {
   # 1. Spaltennamen als Klartext-String für die Achsen-Beschriftung und den Titel erfassen
   column_name_str <- rlang::as_label(rlang::enquo(column_name))
+  if (grepl("_prop$", column_name_str)) {
+    # Z.B. für "afd_prop" oder "linke_prop"
+    titel_praefix <- "Verteilung des Stimmenanteils der Partei: "
+  } else if (grepl("uote", column_name_str)) {
+    # Z.B. für "arblQuote_gesamt" (Wenn in KLARNAMEN nur "gesamt" steht)
+    titel_praefix <- "Verteilung der Quote: "
+  } else {
+    # Für alle anderen (z.B. "einkommen")
+    titel_praefix <- "Verteilung der Variable: "
+  }
+  x_label <- EINHEITEN_MAPPING[column_name_str] %||% "Wert" # Fallback auf "Wert"
+  x_label <- ifelse(is.na(x_label), "In Prozent", x_label)
+  klarname <- KLARNAMEN[column_name_str] %||% column_name_str
   
   # 2. Den Wertebereich ermitteln, um die optimale Anzahl der Klassen (Bins) zu bestimmen (Sturges' Regel)
   daten_vektor <- data |> dplyr::pull({{ column_name }})
@@ -33,9 +46,9 @@ plot_univariate_histogram <- function(column_name)
     
     # Beschriftungen und Titel setzen
     ggplot2::labs(
-      x = column_name_str,
-      y = "Anzahl Beobachtungen",
-      title = paste0("Verteilung von: ", column_name_str)
+      x = x_label,
+      y = "Absolute Häufigkeit",
+      title = paste0(titel_praefix, klarname)
     ) +
     ggplot2::theme_minimal()
   
