@@ -63,15 +63,20 @@ run_univariate_plotting(spalten_liste = spalten_von_interesse)
 bivariate_analysen_to_run <- list(
   
   # ERSTE ANALYSE: Vergleich der Bildungsproportionen nach Ost/West-Zugehörigkeit
-  Analyse_Bildung_OstWest = list(
+  des_Bildungstand = list(
     grouping_variable = "ost", # Gruppierungsvariable
     target_variables = c("bildung_niedrig", "bildung_mittel", "bildung_hoch") # Zielvariablen
   ),
   
   # ZWEITE ANALYSE: Vergleich der Arbeitsquoten nach Ost/West-Zugehörigkeit
-  Analyse_Arbeitsmarkt_OstWest = list(
+  der_Arbeitslosenquote = list(
     grouping_variable = "ost", # Gruppierungsvariable
-    target_variables = c("arblQuote_gesamt", "arblQuote_maenner", "arblQuote_frauen") # Zielvariablen
+    target_variables = c("arblQuote_gesamt", "arblQuote_maenner", "arblQuote_frauen", "arblQuote_jugend", "arblQuote_senioren") # Zielvariablen
+  ),
+  
+  der_Wählerstimmen = list(
+    grouping_variable = "ost", # Gruppierungsvariable
+    target_variables = c("afd_prop", "linke_prop")
   )
 )
 
@@ -79,5 +84,10 @@ bivariate_analysen_to_run <- list(
 # Ruft die Wrapper-Funktion auf, die nacheinander jede Analyse in der Liste durchführt.
 # Die Ergebnisse werden in 'all_bivariate_results' gespeichert (eine Liste von Data Frames).
 all_bivariate_results <- run_multiple_bivariate_analysis(
+  analysen_liste = bivariate_analysen_to_run
+)
+
+# Startet alle Bivariaten Visualisierungen (Boxplots)
+run_multiple_bivariate_plotting(
   analysen_liste = bivariate_analysen_to_run
 )

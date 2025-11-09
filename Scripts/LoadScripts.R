@@ -12,7 +12,7 @@ source("Scripts/LoadPackages.R")
 # Lädt die Funktionen zur Berechnung der univariaten deskriptiven Statistik.
 source("Scripts/DeskriptiveStatistik.R")
 
-# Lädt die Funktionen zur Visualisierung der univariaten deskriptiven Statistik (z.B. Histogramme).
+# Lädt die Funktionen zur Visualisierung der univariaten deskriptiven Statistik (Histogramme).
 source("Scripts/DeskriptiveStatistikVisualisierung.R")
 
 # Lädt die Funktion zur Vorbereitung des Datensatzes (z.B. Erstellung abgeleiteter Variablen wie 'bildung_hoch').
@@ -20,6 +20,12 @@ source("Scripts/DatensatzVorbereiten.R")
 
 # Lädt die Funktionen zur Berechnung der bivariaten deskriptiven Statistik (Gruppenvergleiche).
 source("Scripts/BivariateDeskriptiveStatistik.R")
+
+# Lädt die Funktionen zur Visualisierung der bivariaten deskriptiven Statistik (Boxplots).
+source("Scripts/BivariateDeskriptiveStatistikVisualisierung.R")
+
+# Lädt die Funktionen zur Visualisierung der bivariaten deskriptiven Statistik (Boxplots).
+source("Scripts/VariablenMapping.R")
 
 # Erfolgsmeldung in der Konsole
 cat("\nScripte geladen\n")

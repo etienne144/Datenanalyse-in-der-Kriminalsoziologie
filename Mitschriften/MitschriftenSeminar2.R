@@ -1,33 +1,43 @@
-#-----------------------------------------------------------------------
-# MITTSCHRIFT: GRUNDLAGEN; DATENEXPLORATION UND VISUALISIERUNG (BLOCK 2)
-#-----------------------------------------------------------------------
-#noch nicht überarbeitet
+# ************************************************************
+# MITTSCHRIFT & PLANUNG: GRUNDLAGEN, DATENEXPLORATION UND VISUALISIERUNG (BLOCK 2)
+# ************************************************************
+
+# ------------------------------------------------------------
+# 1. HAUPTZIELSETZUNG (Aus Folie 13)
+# ------------------------------------------------------------
+# - Regression und Ergebnisinterpretation (Kernziel).
+# - Anwendung und Begründung statistischer Entscheidungen und des Analyseprozesses.
 
 
-#Folie 13 beschreibung der groben Zielsetztung für das Projjekt
-# Regression und Ergebnisinterpretation
-# Anwendung und Begründung statistischer Entscheidungen und Analyseprozess
-
-#Folie 22 die wichtigsten dplyr-Funktionen
-
-#Folie 45 alluvil Plots für ordinl und nominl
-#getterplot
-
-#wichtig aV und UV nicht zusmmen darstellen
-
-#Herrausforderungen
-#bildung_hoch erstellen
+# ------------------------------------------------------------
+# 2. METHODISCHE GRUNDLAGEN & TOOLS
+# ------------------------------------------------------------
+# - Die wichtigsten dplyr-Funktionen (Folie 22).
+# - Alluvial Plots (ggalluvial, Folie 45) für die Visualisierung ordinaler und nominaler Daten.
+# - Wichtig: Abhängige Variable (aV) und Unabhängige Variable (UV) nicht direkt zusammen darstellen.
 
 
-#ToDos
-#Linke
-#univrit stndrtwerte, box
-#ost west
-#Bundesländer? ???
+# ------------------------------------------------------------
+# 3. ANALYTISCHE VARIABLEN & DATENEXPLORATION
+# ------------------------------------------------------------
+# Fokusvariablen:
+# - Bildung, Einkommen, Arbeitslosenquote, Ausländerprozent.
+# - Geburten- und Wanderungssaldo.
+# - Politische Variable: Linke
+
+# Herausforderung:
+# - Variable 'bildung_hoch' aus Restwert (100 - bildung_niedrig - bildung_mittel) erstellen (erledigt).
+
+# To-Dos:
+# - Univariate Standardwerte und Boxplots erstellen.
+# - Ost/West und Bundesländer??? (als Gruppierungsvariablen).
 
 
-#Bildung, Einkommen, arbeitslosenquote, usländerprozent? 
-#Fließdings mit einkommen und ost west
-#Bivriat Einkommen, Bildung
-#Arbeitslosenqote und Bildung könnten wir aufschlüsseln
-#Geburssaldo und wadersaldo
+# ------------------------------------------------------------
+# 4. GEPLANTE BIVARIATE ANALYSEN & VISUALISIERUNG
+# ------------------------------------------------------------
+
+# Gruppenvergleiche (Deskriptiv):
+# 1. Einkommen vs. Ost/West (Flussdiagramm/Alluvial Plot geplant).
+# 2. Bivariate Analyse: Einkommen und Bildung.
+# 3. Aufschlüsselung: Arbeitslosenquote und Bildung (oder Arbeitslosenquote vs. Bildungsgruppen).

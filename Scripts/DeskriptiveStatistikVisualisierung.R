@@ -5,9 +5,8 @@
 # ************************************************************
 #' Erstellt ein Histogramm zur Visualisierung der Verteilung einer einzelnen metrischen Variable.
 #'
-#' Das Histogramm dient dazu, die Form (Symmetrie, Schiefe) und Streuung der Variable
-#' in der Gesamtstichprobe schnell zu erfassen. Die Anzahl der Bins (Klassen) wird
-#' mittels Sturges' Regel bestimmt und durch den Faktor HISTOGRAM_BINS_FAKTOR skaliert.
+#' Die Anzahl der Bins wird mittels Sturges' Regel bestimmt
+#' und durch den Faktor HISTOGRAM_BINS_FAKTOR skaliert.
 #' Die Funktion verwendet die globale Variable 'data' und 'ggplot2'.
 #'
 #' @param column_name Die metrische Spalte, deren Verteilung dargestellt werden soll.
