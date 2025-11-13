@@ -47,6 +47,9 @@ IS_PLOT_OUTPUT_ENABLED <- TRUE
 # Je höher der Wert, desto feiner die Darstellung (mehr Säulen).
 HISTOGRAM_BINS_FAKTOR <- 5 
 
+EXPORT_PFAD_TABELLEN = "Tabellen"
+EXPORT_PFAD_ABBILDUNGEN = "Abbildungen"
+
 # 2.1.1 UNIVARIATE Analyse
 # Hier könnten die Aufrufe für die univariate Analyse folgen, falls sie nicht auskommentiert sind:
 spalten_von_interesse <- c("afd_prop", "linke_prop", "ausl_proz")
@@ -59,14 +62,14 @@ run_univariate_plotting(spalten_liste = spalten_von_interesse)
 # Jede benannte Liste ('Analyse_...') enthält die Gruppierungsvariable und die Zielvariablen.
 # ------------------------------------------------------------
 
-# Die zentrale Liste, die alle Bivariaten Analysen definiert
-bivariate_analysen_to_run <- list(
-  
-  # ERSTE ANALYSE: Vergleich der Bildungsproportionen nach Ost/West-Zugehörigkeit
-  des_Bildungstand = list(
-    grouping_variable = "ost", # Gruppierungsvariable
-    target_variables = c("bildung_niedrig", "bildung_mittel", "bildung_hoch") # Zielvariablen
-  ),
+  # Die zentrale Liste, die alle Bivariaten Analysen definiert
+  bivariate_analysen_to_run <- list(
+    
+    # ERSTE ANALYSE: Vergleich der Bildungsproportionen nach Ost/West-Zugehörigkeit
+      des_Bildungstand = list(
+      grouping_variable = "ost", # Gruppierungsvariable
+      target_variables = c("bildung_niedrig", "bildung_mittel", "bildung_hoch") # Zielvariablen
+    ),
   
   # ZWEITE ANALYSE: Vergleich der Arbeitsquoten nach Ost/West-Zugehörigkeit
   der_Arbeitslosenquote = list(
@@ -76,8 +79,14 @@ bivariate_analysen_to_run <- list(
   
   der_Wählerstimmen = list(
     grouping_variable = "ost", # Gruppierungsvariable
-    target_variables = c("afd_prop", "linke_prop")
+    target_variables = c("afd_prop", "linke_prop", "spd_prop", "b90_prop", "fdp_prop","union_prop")
+  ),
+  der_Empfängerinnen_von_Sozialleistungen
+  = list(
+    grouping_variable = "ost", # Gruppierungsvariable
+    target_variables = c( "sgb2_nichterw")
   )
+  
 )
 
 # Startet alle Bivariaten Analysen in einem Aufruf

@@ -54,7 +54,7 @@ plot_univariate_histogram <- function(column_name)
   
   print(histogram_plot)
   
-  invisible(NULL)
+  return(histogram_plot)
 }
 
 # ************************************************************
@@ -85,7 +85,18 @@ run_univariate_plotting <- function(spalten_liste)
     spalte_als_symbol <- rlang::sym(spalten_name) 
     
     # Aufruf der Plot-Funktion für die aktuelle Variable
-    plot_univariate_histogram(column_name = !!spalte_als_symbol)
+    current_plot <- plot_univariate_histogram(column_name = !!spalte_als_symbol)
+    # B. Export mit ggsave (Nutzt den Spaltennamen für den Dateinamen)
+    file_path <- file.path(EXPORT_PFAD_ABBILDUNGEN, paste0("Histogramm_", spalten_name, ".png"))
+    
+    ggplot2::ggsave(
+      filename = file_path,
+      plot = current_plot,
+      device = "png",         # Dateiformat
+      width = 18,             # Breite (in cm)
+      height = 12,            # Höhe (in cm)
+      units = "cm"            # Einheiten
+    )
   }
   
   # Sendet Log über Erfolg

@@ -74,7 +74,7 @@ plot_multiple_boxplots <- function(df, target_variables, grouping_variable, anal
   
   print(boxplot_plot)
   
-  invisible(NULL)
+  return(boxplot_plot)
 }
 
 # ************************************************************
@@ -105,11 +105,21 @@ run_multiple_bivariate_plotting <- function(analysen_liste)
     cat(paste0("\n--- Starte Boxplot-Visualisierung: ", analyse_name, " ---\n"))
     
     # 3. Führe die Kern-Plot-Funktion aus (jetzt plot_multiple_boxplots!)
-    plot_multiple_boxplots(
+    current_plot <- plot_multiple_boxplots(
       df = data, # Übergeben Sie den Datensatz explizit
       grouping_variable = grouping_var,
       target_variables = target_vars,
       analyse_name_str = analyse_name
+    )
+    file_path <- file.path(EXPORT_PFAD_ABBILDUNGEN, paste0("Boxplots_", analyse_name, ".png"))
+    
+    ggplot2::ggsave(
+      filename = file_path,
+      plot = current_plot,
+      device = "png",         # Dateiformat
+      width = 18,             # Breite (in cm)
+      height = 12,            # Höhe (in cm)
+      units = "cm"            # Einheiten
     )
   }
   

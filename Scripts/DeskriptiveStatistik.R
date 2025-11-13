@@ -76,9 +76,18 @@ run_descriptive_analysis <- function(spalten_liste)
   # 4. Spaltennamen hinzufügen und umsortieren: Die Spalte 'Spalte' wird vorne eingefügt
   all_stats_df$Spalte <- spalten_liste
   all_stats_df <- all_stats_df[, c("Spalte", names(all_stats_df)[-length(names(all_stats_df))])]
-  
+  export_pfad <- paste0(EXPORT_PFAD_TABELLEN, "/Univariate.xlsx")
   # 5. Finale Ausgabe und Rückgabe: Anzeige nur, wenn die globale Steuerungsvariable TRUE ist
   if (IS_TABLE_OUTPUT_ENABLED) {
+    dir.create(dirname(export_pfad), showWarnings = FALSE)
+    
+    # Export als Excel-Datei
+    openxlsx::write.xlsx(
+      all_stats_df, 
+      file = export_pfad, 
+      overwrite = TRUE, 
+      sheetName = "Univariate Statistiken gesammt" # Definiert den Namen des einzigen Blattes
+    )
     cat("\nZusammengefasste UNIVARIATE Analyse aller Spalten von Interesse\n")
     print(all_stats_df)
   }
