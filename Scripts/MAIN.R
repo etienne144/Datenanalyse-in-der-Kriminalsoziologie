@@ -50,9 +50,10 @@ HISTOGRAM_BINS_FAKTOR <- 5
 EXPORT_PFAD_TABELLEN = "Tabellen"
 EXPORT_PFAD_ABBILDUNGEN = "Abbildungen"
 
+NACHKOMMASTELLEN <- 2
 # 2.1.1 UNIVARIATE Analyse
 # Hier könnten die Aufrufe für die univariate Analyse folgen, falls sie nicht auskommentiert sind:
-spalten_von_interesse <- c("afd_prop", "linke_prop", "ausl_proz")
+spalten_von_interesse <- c("afd_prop", "linke_prop", "spd_prop", "b90_prop", "fdp_prop","union_prop")
 all_stats_df <- run_descriptive_analysis(spalten_liste = spalten_von_interesse)
 run_univariate_plotting(spalten_liste = spalten_von_interesse)
 

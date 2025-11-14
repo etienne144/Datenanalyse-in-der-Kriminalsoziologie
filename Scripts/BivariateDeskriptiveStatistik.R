@@ -26,13 +26,13 @@
       dplyr::group_by(!!group_sym) |>
       # 2. 'ANWENDEN & ZUSAMMENFASSEN' (Apply & Combine): Berechnung der Kennzahlen PRO Gruppe
       dplyr::summarise(
-        Mittelwert = mean(!!target_sym, na.rm = TRUE),
-        Minimum = min(!!target_sym, na.rm = TRUE),
-        Quartil_25 = quantile(!!target_sym, 0.25,na.rm = TRUE),
-        Median = median(!!target_sym, na.rm = TRUE),
-        Quartil_75 = quantile(!!target_sym, 0.75,na.rm = TRUE),
-        Maximum = max(!!target_sym, na.rm = TRUE),
-        Std_Abweichung = sd(!!target_sym, na.rm = TRUE),
+        Mittelwert = round(mean(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
+        Minimum = round(min(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
+        Quartil_25 = round(quantile(!!target_sym, 0.25,na.rm = TRUE),NACHKOMMASTELLEN),
+        Median = round(median(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
+        Quartil_75 = round(quantile(!!target_sym, 0.75,na.rm = TRUE),NACHKOMMASTELLEN),
+        Maximum = round(max(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
+        Std_Abweichung =round(sd(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
         Fallzahl_n = dplyr::n(), # Zählt die Fälle (n) pro Gruppe
         .groups = 'drop' # Beendet die Gruppierung nach der Berechnung
       )

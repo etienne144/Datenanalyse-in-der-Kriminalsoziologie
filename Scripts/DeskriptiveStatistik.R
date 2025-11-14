@@ -21,13 +21,13 @@ calculate_descriptive_stats <- function(column_name)
   # 2. Berechnung der Kennzahlen mithilfe von dplyr::summarise()
   stats_result <- data |>
     dplyr::summarise(
-      Mittelwert = mean({{ column_name }}, na.rm = TRUE),
-      Minimum = min({{ column_name }}, na.rm = TRUE),
-      Quartil_25 = quantile({{ column_name }}, 0.25, na.rm = TRUE),
-      Median = median({{ column_name }}, na.rm = TRUE),
-      Quartil_75 = quantile({{ column_name }}, 0.75, na.rm = TRUE),
-      Maximum = max({{ column_name }}, na.rm = TRUE),
-      Std_Abweichung = sd({{ column_name }}, na.rm = TRUE),
+      Mittelwert = round(mean({{ column_name }}, na.rm = TRUE),NACHKOMMASTELLEN),
+      Minimum = round(min({{ column_name }}, na.rm = TRUE),NACHKOMMASTELLEN),
+      Quartil_25 = round(quantile({{ column_name }}, 0.25, na.rm = TRUE),NACHKOMMASTELLEN),
+      Median = round(median({{ column_name }}, na.rm = TRUE),NACHKOMMASTELLEN),
+      Quartil_75 = round(quantile({{ column_name }}, 0.75, na.rm = TRUE),NACHKOMMASTELLEN),
+      Maximum = round(max({{ column_name }}, na.rm = TRUE),NACHKOMMASTELLEN),
+      Std_Abweichung = round(sd({{ column_name }}, na.rm = TRUE),NACHKOMMASTELLEN),
       .groups = 'drop'
     )
   
