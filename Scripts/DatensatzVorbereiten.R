@@ -24,8 +24,9 @@ datensatz_vorbereiten <- function(df = data)
       ), # WICHTIG: Komma trennt die across-Anweisung vom nächsten mutate-Argument
       
       # 2. Erstellt die Variable 'bildung_hoch' als Restwert (benötigt die skalierten Werte)
-      bildung_hoch = 100 - bildung_niedrig - bildung_mittel
-      
+      bildung_hoch = 100 - bildung_niedrig - bildung_mittel,
+      #3 psst die Variable einkoomen an, auf einkommen je Einwohner
+      df_neu$einkommen <- df$einkommen/1000
     )
   
   cat("\nDatensatz vorbereitet\n")
