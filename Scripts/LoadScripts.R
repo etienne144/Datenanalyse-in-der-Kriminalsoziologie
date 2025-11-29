@@ -27,5 +27,8 @@ source("Scripts/BivariateDeskriptiveStatistikVisualisierung.R")
 # Lädt die Funktionen zur Visualisierung der bivariaten deskriptiven Statistik (Boxplots).
 source("Scripts/VariablenMapping.R")
 
+#Lädt die Funktion für die Einfche-Bet-Regression
+source("Scripts/Einfach-Beta-Regression.R")
+
 # Erfolgsmeldung in der Konsole
 cat("\nScripte geladen\n")

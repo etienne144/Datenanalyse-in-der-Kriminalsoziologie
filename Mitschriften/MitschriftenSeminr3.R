@@ -26,3 +26,5 @@
 #usgeben lssen und dnn die Abbildung interpretieren
 
 #residium die bweichung zwischen vorhersge und ttsächlichen dten
+
+#einkommen durch 1000 rechnen, dnn einzelpersonen einkommen. 

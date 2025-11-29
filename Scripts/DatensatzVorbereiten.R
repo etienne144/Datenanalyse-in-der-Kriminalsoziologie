@@ -21,14 +21,29 @@ datensatz_vorbereiten <- function(df = data)
       dplyr::across(
         .cols = dplyr::ends_with("_prop"), 
         .fns = ~ .x * 100
-      ), # WICHTIG: Komma trennt die across-Anweisung vom nächsten mutate-Argument
+      ),
       
       # 2. Erstellt die Variable 'bildung_hoch' als Restwert (benötigt die skalierten Werte)
       bildung_hoch = 100 - bildung_niedrig - bildung_mittel,
       #3 psst die Variable einkoomen an, auf einkommen je Einwohner
-      df_neu$einkommen <- df$einkommen/1000
+      einkommen <- einkommen/1000
     )
   
   cat("\nDatensatz vorbereitet\n")
+  return(df_neu) 
+}
+datensatz_vorbereiten_regression <- function(df = data)
+{
+  df_neu <- df |>
+    dplyr::mutate(
+      
+      # 1. Skalierung der "_prop" Variablen von 0-1 auf 0-100 Prozent
+      dplyr::across(
+        .cols = dplyr::ends_with("_prop"), 
+        .fns = ~ .x / 100
+      )
+    )
+  
+  cat("\nDatensatz vorbereitet für Regression\n")
   return(df_neu) 
 }

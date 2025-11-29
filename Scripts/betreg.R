@@ -35,7 +35,7 @@ curve(dbeta(x, alpha, beta),
 # 3. Schätze eine Einfach-Beta-Regression ------
 load("Data/Geovisualisierung.RData")
 library("glmmTMB")
-geovisualisierung$bip_je_einwohner <- geovisualisierung$bip_je_einwohner/10000 # Umskalieren des Einkommens
+geovisualisierung$bip_je_einwohner <- geovisualisierung$bip_je_einwohner# Umskalieren des Einkommens
 model_w <- glmmTMB(
   afd_prop ~ bip_je_einwohner ,
   family = beta_family(link = "logit"),
