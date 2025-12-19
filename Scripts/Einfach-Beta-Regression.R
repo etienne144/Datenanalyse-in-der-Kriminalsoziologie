@@ -24,13 +24,26 @@ Einfach_Beta_Regression <- function(y_name, x_names)
 #'
 #' @param model Das glmmTMB-Modellobjekt.
 #' @param y_name String: Name der abhängigen Variable.
-#' @param x_name String: Name der unabhängigen Variable, die visualisiert werden soll (muss die erste UV sein).
+#' @param x_name String: Name der unabhängigen Variable, die visualisiert werden soll.
 #' @param analyse_name String: Name der Analyse (für den Dateinamen).
 #' @param output_dir String: Der Ordner, in den das Bild exportiert wird.
 plot_beta_regression <- function(model, y_name, x_name, analyse_name)
 {
   # 1. Sicherstellen, dass der Output-Ordner existiert
   dir.create(EXPORT_PFAD_ABBILDUNGEN, recursive = TRUE, showWarnings = FALSE)
+  
+  x_label <- if (x_name %in% names(KLARNAMEN)) {
+    KLARNAMEN[x_name]
+  } else {
+    x_name
+  }
+  
+  # 2. Klartextname für die AV (y-Achse, verwendet für den Plot-Titel)
+  y_label <- if (y_name %in% names(KLARNAMEN)) {
+    KLARNAMEN[y_name]
+  } else {
+    y_name
+  }
   
   # 2. Daten für die Vorhersagelinie erstellen
   # Da die Visualisierung kompliziert ist, wenn es Kontrollvariablen gibt, 
@@ -42,7 +55,7 @@ plot_beta_regression <- function(model, y_name, x_name, analyse_name)
   data$pred_y <- predict(model, type = "response") 
   
   # 3. Plot-Titel und Achsenbeschriftung erstellen
-  plot_titel <- paste0("Beta-Regression: Beziehung zwischen ", x_name, " und ", y_name)
+  plot_titel <- paste0("Beta-Regression: Beziehung zwischen ", x_label, " und ", y_label)
   
   # 4. Plot erstellen
   plot_obj <- ggplot2::ggplot(data, 
@@ -61,8 +74,8 @@ plot_beta_regression <- function(model, y_name, x_name, analyse_name)
                        linewidth = 1.2) + 
     
     # 5. Beschriftungen
-    ggplot2::labs(x = x_name,
-                  y = paste0("Vorhergesagter Anteil (", y_name, ")"),
+    ggplot2::labs(x = x_label,
+                  y = paste0("Vorhergesagter Anteil (", y_label, ")"),
                   title = plot_titel) +
     ggplot2::theme_minimal()
   
@@ -98,9 +111,8 @@ Einfach_Beta_Regressions_Loop <- function(analysen_liste)
     # 1. Modell erstellen
     model <- Einfach_Beta_Regression(y_name = y_name, x_names = x_names)
     
-    # 2. Summary erstellen und exportieren (Nutzt den Analysennamen für die Datei)
+    # 2. Summary erstellen und exportieren (Nutzt den Analysenamen für die Datei)
     summary_name <- paste0(EXPORT_PFAD_TABELLEN, "/BetaReg_", analyse_name, ".docx")
-    
     modelsummary::modelsummary(
       model,
       shape = term ~ component,
@@ -109,6 +121,7 @@ Einfach_Beta_Regressions_Loop <- function(analysen_liste)
     )
     
     # 3. Abbildung erstellen und exportieren (bezieht sich auf die erste unabhängige Variable)
+    #Hier vlt eine schleife einbauen und für jede UV-Variable eine Plot erstellen???
     unabhaengige_variable_fuer_plot <- x_names[1] 
     plot_beta_regression(
       model = model,
@@ -116,7 +129,7 @@ Einfach_Beta_Regressions_Loop <- function(analysen_liste)
       x_name = unabhaengige_variable_fuer_plot,
       analyse_name = analyse_name # Für den Dateinamen
     )
-      
+    
   }
   
   cat("\nAlle Beta-Regressionen abgeschlossen.\n")

@@ -14,7 +14,12 @@ required_packages <- c("here",         # Für die einfache Pfadverwaltung in Pro
                        "ggalluvial",  # Spezielles Paket für Alluvial-Diagramme (Visualisierung von Flussdaten/Kategorien)
                        "openxlsx",    # zum exportieren als exceldatei
                        "glmmTMB",       #für die Beta-Regression
-                       "pandoc"       #auch für Beta
+                       "pandoc",       #auch für Beta
+                       "broom",
+                       "kableExtra",
+                       "knitr",
+                       "sf", #braucht es irgendwie für die Geodaten
+                       "pradadata" #der Datensatz
                        )
 
 # ************************************************************

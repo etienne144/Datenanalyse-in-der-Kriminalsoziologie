@@ -1,0 +1,441 @@
+---
+title: "sitzung05.12"
+format: html
+---
+
+---
+title: "Visualisierung kategorialer Daten mit Alluvial-Plots und Beta-Regression"
+author: 
+  - Mariana Nold
+date: now
+date-format: iso
+title-block-banner: "#5A6E5A"  # Dunkelgrün mit grauem Einschlag
+title-block-style: default     # Ermöglicht CSS-Anpassung des Titels
+
+format:
+  html:
+    theme: sandstone
+    toc: true
+    toc-location: left
+    number-sections: true
+    code-fold: true
+    code-tools: false
+    embed-resources: true
+    self-contained: true
+    df-print: paged
+    highlight-style: gruvbox
+ 
+    folder_analysis: # Hier kannst du z. B. einen Pfad wie "results/" setzen
+---
+
+# Einleitung
+
+Dieses Dokument zeigt, wie man kategoriale Daten mit einem **Alluvial Plot** analysiert und visualisiert. Die simulierten Daten beschreiben eine hypothetische Verteilung von Urteilen, Dauerklassen und Komplexitätsklassen in einem Verfahren.
+
+# Pakete laden
+
+```{r load package , message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(ggalluvial)
+library(broom)
+library(kableExtra)
+library(knitr)
+library(glmmTMB)
+```
+
+# Funktionen
+
+```{r functions}
+bewerte_modelle <- function(modell_einfach, modell_komplex) {
+  aic_einfach <- AIC(modell_einfach)
+  aic_komplex <- AIC(modell_komplex)
+  delta <- aic_einfach - aic_komplex
+  
+  interpretation <- if (abs(delta) < 2) {
+    "Die Modelle sind gleichwertig – das komplexere Modell bietet keinen nennenswerten Vorteil."
+  } else if (delta > 2 & delta < 7) {
+    "Das komplexere Modell ist etwas besser, aber der Vorteil ist moderat."
+  } else if (delta >= 7) {
+    "Das komplexere Modell ist deutlich besser und wird klar bevorzugt."
+  } else if (delta < -2 & delta > -7) {
+    "Das einfachere Modell ist etwas besser – der Zusatz im komplexen Modell lohnt sich kaum."
+  } else if (delta <= -7) {
+    "Das einfachere Modell ist deutlich besser – das komplexere Modell ist überfrachtet."
+  } else {
+    "Unklare Differenz – bitte prüfen Sie die Modelle genauer."
+  }
+  
+  return(list(
+    AIC_einfach = aic_einfach,
+    AIC_komplex = aic_komplex,
+    Delta_AIC = round(delta, 2),
+    Bewertung = interpretation
+  ))
+}
+
+```
+
+# Daten laden
+
+```{r load data, message=FALSE, warning=FALSE}
+#install.packages("here")
+library(here)
+
+# libraries are imported
+source(here("RBFiles/rpackages.r"))
+
+# 1 1 Import data  -------------------------------------------------------------
+
+load(here("Orgdata/pol_mord.RData"))
+# names of variables in orginal data set
+names(pol_mord)
+#View(pol_mord)
+
+```
+
+# Klassifizierung
+
+```{r class , message=FALSE, warning=FALSE}
+dataf <- data.frame(name= pol_mord$Name)
+dataf$richtung <- pol_mord$Richtung.Täter
+table(dataf$richtung, useNA = "always")
+dataf$jahr <- sub(".*([0-9]{2})$", "\\1", pol_mord$Todesdatum)
+table(dataf$jahr, useNA = "always")
+dataf$todesart <- pol_mord$Art.der.Tötung
+table(dataf$todesart, useNA = "always")
+
+
+dataf <- dataf %>%
+  mutate(
+    todesart_kat = case_when(
+      grepl("Ersch", todesart, ignore.case = TRUE) ~ "Erschießung",
+      grepl("verunglückt", todesart, ignore.case = TRUE) ~ "tödlich verunglückt",
+      TRUE ~ "andere"
+    )
+  )
+
+
+table(dataf$todesart_kat, useNA = "always")
+#table(pol_mord$Kons_A, useNA = "always")
+
+pol_mord <- pol_mord %>%
+  mutate(
+    Urteil = case_when(
+      Kons_A %in% c("freigesprochen", "keine Strafen") ~ "nein",
+      grepl("schwebt", Kons_A, ignore.case = TRUE) ~ "nein",
+      is.na(Kons_A) ~ NA_character_,
+      TRUE ~ "ja"
+    )
+  )
+
+# Häufigkeiten inkl. NA anzeigen
+table(pol_mord$Urteil, useNA = "always")
+dataf$urteil <- pol_mord$Urteil
+
+
+
+```
+
+# Datensatz zusammenstellen
+
+```{r data , message=FALSE, warning=FALSE}
+verfahren <- data.frame(
+  jahr = dataf$jahr,
+  richtung = dataf$richtung,
+  todesart = dataf$todesart_kat,
+  urteil = dataf$urteil
+)
+
+verfahren <- verfahren %>%
+  filter(jahr != "22") %>%   # Jahr 1922 rausnehmen
+  filter(!is.na(jahr), !is.na(richtung), !is.na(todesart), !is.na(urteil))
+
+table(verfahren$jahr)
+```
+
+# Häufigkeit berechnen
+
+```{r frequ , message=FALSE, warning=FALSE}
+# https://corybrunson.github.io/ggalluvial/
+
+
+# Häufigkeit berechnen
+verfahren_freq <- as.data.frame(table(verfahren))
+names(verfahren_freq) <- c("Jahr", "Richtung", "Todesart", "Urteil", "Freq")
+verfahren_freq
+sum(verfahren_freq$Freq)
+```
+
+# Visualisierung: Alluvial Plot
+
+## Einfache Beispiele: Zwei Achsen
+
+```{r allvs1}
+ggplot(verfahren,
+       aes(axis1 = jahr, axis2 = urteil, y = 1)) +   # y=1 zählt jede Zeile
+  geom_alluvium(aes(fill = urteil), alpha = 0.8) +
+  geom_stratum(width = 1/8, fill = "gray90", color = "black") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  scale_x_discrete(limits = c("Jahr", "Urteil"), expand = c(.1, .05)) +
+  labs(title = "Jahr → Urteil", y = "Anzahl Fälle", x = NULL) +
+  theme_minimal()
+
+```
+
+```{r allvs2}
+ggplot(verfahren,
+       aes(axis1 = richtung, axis2 = todesart, y = 1)) +
+  geom_alluvium(aes(fill = todesart), alpha = 0.8) +
+  geom_stratum(width = 1/8, fill = "gray95", color = "black") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+  scale_x_discrete(limits = c("Richtung", "Todesart"), expand = c(.1, .05)) +
+  labs(title = "Richtung → Todesart", y = "Anzahl Fälle", x = NULL) +
+  theme_minimal()
+
+```
+
+## Drei Achsen
+
+```{r alluvial3 , message=FALSE, warning=FALSE}
+# Alluvial-Plot mit anderer Achsenreihenfolge
+ggplot(verfahren_freq,
+       aes(axis1 = Jahr,
+           axis2 = Todesart,
+           axis3 = Urteil,
+           y = Freq)) +
+  geom_alluvium(aes(fill = Todesart), width = 1/12) +
+  geom_stratum(width = 1/8, fill = "gray90", color = "black") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 3) +
+  scale_x_discrete(limits = c("Jahr", "Todesart", "Urteil"),
+                   expand = c(.1, .05)) +
+  labs(title = "Jahr → Todesart → Urteil",
+       y = "Häufigkeit", x = NULL) +
+  theme_minimal()
+```
+
+
+
+```{r alluvial3b , message=FALSE, warning=FALSE}
+# Alluvial-Plot mit anderer Achsenreihenfolge
+ggplot(verfahren_freq,
+       aes(axis1 = Jahr,
+           axis2 = Richtung,
+           axis3 = Urteil,
+           y = Freq)) +
+  geom_alluvium(aes(fill = Richtung), width = 1/12) +
+  geom_stratum(width = 1/8, fill = "gray90", color = "black") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 3) +
+  scale_x_discrete(limits = c("Jahr", "Richtung", "Urteil"),
+                   expand = c(.1, .05)) +
+  labs(title = "Jahr → Richtung → Urteil",
+       y = "Häufigkeit", x = NULL) +
+  theme_minimal()
+```
+
+
+## Vier Achsen
+
+```{r alluvial4 , message=FALSE, warning=FALSE}
+# https://www.r-bloggers.com/2019/06/data-flow-visuals-alluvial-vs-ggalluvial-in-r/
+# https://medium.com/@arnavsaxena96/all-about-alluvial-diagrams-21da1505520b
+# https://r-charts.com/flow/ggalluvial/
+# https://www.r-bloggers.com/2018/10/data-exploration-with-alluvial-plots-an-introduction-to-easyalluvial/
+ggplot(verfahren_freq,
+       aes(axis1 = Jahr,
+           axis2 = Richtung,
+           axis3 = Todesart,
+           axis4 = Urteil,
+           y = Freq)) +
+  geom_alluvium(aes(fill = Todesart), width = 1/12) +
+  geom_stratum(width = 1/8, fill = "gray90", color = "black") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 3) +
+  scale_x_discrete(limits = c("Jahr", "Richtung", "Todesart","Urteil"),
+                   expand = c(.1, .05)) +
+  labs(title = "Jahr →  Richtung (Täter) →  Todesart →  Urteil",
+       y = "Häufigkeit", x = NULL) +
+  theme_minimal()
+```
+
+------------------------------------------------------------------------
+# Vertiefte Analye
+
+## Farbkombination wählen
+
+```{r color comb}
+verfahren_freq <- verfahren_freq %>%
+  dplyr::mutate(Jahr_Richtung = paste(Jahr, Richtung, sep = "_"))
+
+ggplot(verfahren_freq,
+       aes(axis1 = Jahr,
+           axis2 = Richtung,
+           axis3 = Urteil,
+           y = Freq)) +
+  geom_alluvium(aes(fill = Jahr_Richtung), width = 1/12) +
+  geom_stratum(width = 1/8, fill = "gray90", color = "black") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 3) +
+  scale_x_discrete(limits = c("Jahr", "Richtung", "Urteil"),
+                   expand = c(.1, .05)) +
+  labs(title = "Jahr → Richtung → Urteil",
+       y = "Häufigkeit", x = NULL) +
+  theme_minimal()
+
+```
+
+## Farben spezifisch wählen
+
+
+
+```{r red blue}
+ggplot(verfahren_freq,
+       aes(axis1 = Jahr,
+           axis2 = Richtung,
+           axis3 = Urteil,
+           y = Freq)) +
+  geom_alluvium(aes(fill = interaction(Jahr, Richtung)), width = 1/12) +
+  geom_stratum(width = 1/8, fill = "gray90", color = "black") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 3) +
+  scale_x_discrete(limits = c("Jahr", "Richtung", "Urteil"),
+                   expand = c(.1, .05)) +
+  scale_fill_manual(values = c(
+    "#B22222", # firebrick red
+    "#CD5C5C", # indian red
+    "#FF6347", # tomato red
+    "#1E3A8A", # dark blue
+    "#4682B4", # steel blue
+    "#87CEEB"  # sky blue
+  )) +
+  labs(title = "Jahr → Richtung → Urteil",
+       y = "Häufigkeit", x = NULL) +
+  theme_minimal()
+
+
+```
+
+
+```{r urteil richtung}
+ggplot(verfahren_freq,
+       aes(axis1 = Jahr,
+           axis2 = Richtung,
+           axis3 = Urteil,
+           y = Freq)) +
+  geom_alluvium(aes(fill = interaction(Urteil, Richtung)), width = 1/12) +
+  geom_stratum(width = 1/8, fill = "gray90", color = "black") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 3) +
+  scale_x_discrete(limits = c("Jahr", "Richtung", "Urteil"),
+                   expand = c(.1, .05)) +
+  labs(title = "Jahr → Richtung → Urteil",
+       y = "Häufigkeit", x = NULL) +
+  theme_minimal()
+
+```
+
+
+## Regression zur letzten Grafik
+```{r prep. betareg}
+# Häufigkeitstabelle
+verfahren_freq2 <- as.data.frame(table(verfahren)) %>%
+  mutate(Prozent = round(Freq / sum(Freq) * 100, 1)) %>%
+  select(jahr, richtung, urteil, Freq, Prozent)   # nur die gewünschten Variablen
+
+# Tabelle darstellen
+
+kable(verfahren_freq2,
+      col.names = c("Jahr", "Richtung", "Urteil", "Häufigkeit", "Prozent"),
+      caption = "Häufigkeiten der Kombinationen (Breite der Alluvien)")
+
+# Schritt 1: Prozent-Spalte skalieren auf Bereich [0, 1]
+# Angenommen, Prozent sind in %-Angaben: z. B. 10.7 → 0.107
+verfahren_freq2 <- verfahren_freq2 %>%
+  mutate(Prozent = Prozent / 100)
+
+# Schritt 2: Werte auf offenen Bereich (0,1) transformieren
+set.seed(42)  # Für Reproduzierbarkeit
+
+verfahren_freq2 <- verfahren_freq2 %>%
+  mutate(Prozent_beta = case_when(
+    Prozent == 0 ~ runif(n(), min = 0.001, max = 0.01),
+    Prozent == 1 ~ runif(n(), min = 0.99, max = 0.999),
+    TRUE ~ Prozent
+  ))
+names(verfahren_freq2)
+
+```
+## Regression ohne Interaktion
+```{r betareg}
+# Modell erstellen
+modell <- glmmTMB(Prozent_beta ~ jahr + richtung + urteil,   family = beta_family(link = "logit"),
+  data = verfahren_freq2)
+
+modelsummary(modell,
+             shape = term ~ component,
+             statistic = "conf.int", output = "markdown")
+
+```
+## Regression mit Interaktion
+```{r interact}
+modell2 <- glmmTMB(Prozent_beta ~ jahr + richtung + urteil + urteil:richtung,   family = beta_family(link = "logit"),
+  data = verfahren_freq2)
+
+modelsummary(modell2,
+             shape = term ~ component,
+             statistic = "conf.int", output = "markdown")
+```
+## Ohne Berücksichtigung des Jahrs
+```{r ohne jahr}
+modell3 <- glmmTMB(Prozent_beta ~  richtung + urteil,   family = beta_family(link = "logit"),
+  data = verfahren_freq2)
+
+modelsummary(modell3,
+             shape = term ~ component,
+             statistic = "conf.int", output = "markdown")
+
+
+modell4 <- glmmTMB(Prozent_beta ~  richtung + urteil + urteil:richtung,   family = beta_family(link = "logit"),
+  data = verfahren_freq2)
+
+modelsummary(modell4,
+             shape = term ~ component,
+             statistic = "conf.int", output = "markdown")
+
+vergleich<- bewerte_modelle(modell3, modell4)
+
+cat(paste0("**Interpretation:** ", vergleich$Bewertung))
+
+
+```
+## Ohne Berücksichtigung der Richtung
+```{r ohne richtung}
+
+modell5 <- glmmTMB(Prozent_beta ~  jahr + urteil,   family = beta_family(link = "logit"),
+  data = verfahren_freq2)
+
+modelsummary(modell5,
+             shape = term ~ component,
+             statistic = "conf.int", output = "markdown")
+
+
+modell6 <- glmmTMB(Prozent_beta ~  jahr + urteil + urteil:jahr,   family = beta_family(link = "logit"),
+  data = verfahren_freq2)
+
+modelsummary(modell6,
+             shape = term ~ component,
+             statistic = "conf.int", output = "markdown")
+
+vergleich2 <- bewerte_modelle(modell5, modell6)
+
+cat(paste0("**Interpretation:** ", vergleich2$Bewertung))
+
+```
+# Fazit der Analyse
+
+Die grafische Auswertung legt nahe, dass das Jahr als erklärende Variable berücksichtigt werden sollte, da sich ein zeitlicher Effekt andeutet: In späteren Jahren wurden offenbar weniger Urteile gesprochen. Im statistischen Modell (Modell 5 und Modell 6) zeigt sich für diese Vermutung jedoch nur eine schwache Tendenz. Deutlicher erkennbar ist hingegen, dass bei rechten Tätern Urteile eher nicht ausgesprochen wurden (Modell 3 und Modell 4). Insgesamt ist die Aussagekraft der Ergebnisse durch die geringe Stichprobengröße (n = 36) eingeschränkt, sodass die Unsicherheit relativ hoch bleibt.
+
+# Bedeutung für eine Hausarbeit
+
+Mit Blick auf diese Re‑Analyse könnte eine Hausarbeit vor allem die Frage der statistischen Power vertiefen. Da die Stichprobe mit n=36n = 36 sehr klein ist, wäre es sinnvoll, sich mit Methoden auseinanderzusetzen, die die Power simulativ untersuchen. Eine Möglichkeit bestünde darin, die Stichprobe künstlich zu vergrößern, indem man wiederholt zufällig aus den vorhandenen Daten zieht (Resampling). Dabei ist jedoch zu betonen, dass dies nur Aussagen über die Power erlaubt – nicht über die realen Sachverhalte.
+
+Eine Hausarbeit könnte also folgende Leitfragen verfolgen:
+
+- Wie viele Jahre hätte man beobachten müssen, wenn die in den Daten beschriebene Situation fortbestanden hätte, um einen statistisch belastbaren Nachweis für eine mögliche Trendjustiz zu erbringen?
+- Wie viele Fälle pro Jahr wären erforderlich gewesen, damit die Modelle eine klare Aussage über den vermuteten zeitlichen Effekt liefern?

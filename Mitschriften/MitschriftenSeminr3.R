@@ -28,3 +28,5 @@
 #residium die bweichung zwischen vorhersge und ttsächlichen dten
 
 #einkommen durch 1000 rechnen, dnn einzelpersonen einkommen. 
+
+# 3-5 Prädiktoren pro Modell

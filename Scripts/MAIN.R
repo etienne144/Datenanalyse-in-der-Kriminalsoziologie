@@ -20,15 +20,11 @@ source("Scripts/LoadScripts.R")
 # Ruft die Funktion auf, um alle benötigten R-Pakete (z.B. ggplot2, dplyr) zu installieren und zu laden.
 load_packages(required_packages)
 
-# 1.3. Datensatz laden
-# Lädt den gespeicherten Datensatz und weist ihn der Arbeitsvariable 'data' zu.
-load("Data/Geovisualisierung.RData")
-data <- geovisualisierung
-
-# 1.4. Datensatz vorbereiten
+# 1.4. Datensatz laden vorbereiten
 # Ruft die Funktion auf, um neue, abgeleitete Variablen zu erstellen (z.B. 'bildung_hoch')
 # und den Datensatz für die Analyse vorzubereiten.
-data <- datensatz_vorbereiten(df = data)
+data <- datensatz_vorbereiten()
+View(data)
 
 # ************************************************************
 
@@ -43,9 +39,10 @@ IS_TABLE_OUTPUT_ENABLED <- FALSE
 # Steuert, ob Plots/Diagramme erstellt und in der Konsole/im Plot-Fenster angezeigt werden sollen (TRUE/FALSE)
 IS_PLOT_OUTPUT_ENABLED <- FALSE  
 
+
 # Faktor zur Skalierung der Klassenanzahl (Bins) in Histogrammen.
 # Je höher der Wert, desto feiner die Darstellung (mehr Säulen).
-HISTOGRAM_BINS_FAKTOR <- 5 
+HISTOGRAM_BINS_FAKTOR <- 5
 EXPORT_PFAD_TABELLEN = "Tabellen"
 EXPORT_PFAD_ABBILDUNGEN = "Abbildungen"
 NACHKOMMASTELLEN <- 2
@@ -116,9 +113,9 @@ beta_analysen_to_run <- list(
     x_names = c("einkommen") # Unabhängige Variable(n)
   ),
    
-  AFD_arblQuote = list(
-    y_name = "afd_prop", # Abhängige Variable
-    x_names = c( "arblQuote_frauen") # Unabhängige Variable(n)
+  AFD_verlorenerOrt = list(
+    y_name = "afd_prop", # Abhängige Variable                                   Hier falls ihr interaktionen prüfen wollt
+    x_names = c( "gebursaldo", "wohnbestand", "wandssaldo", "arblQuote_jugend", "arblQuote_jugend:wohnbestand") # Unabhängige Variable(n)
   )
 )
 
