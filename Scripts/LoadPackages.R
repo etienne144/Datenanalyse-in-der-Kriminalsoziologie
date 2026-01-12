@@ -11,6 +11,7 @@
 required_packages <- c("here",         # Für die einfache Pfadverwaltung in Projekten
                        "tidyverse",    # Kernpaket für Datenmanipulation (enthält dplyr, ggplot2, etc.)
                        "ggplot2",      # Separate Nennung, falls tidyverse nicht geladen wird (redundant, aber klar)
+                       "ggcorrplot",
                        "ggalluvial",  # Spezielles Paket für Alluvial-Diagramme (Visualisierung von Flussdaten/Kategorien)
                        "openxlsx",    # zum exportieren als exceldatei
                        "glmmTMB",       #für die Beta-Regression

@@ -1,9 +1,9 @@
 # LoadScripts.R
 # ************************************************************
-# ZWECK: Dieses Skript dient als Manifest (Ladeliste) und lädt alle
+# ZWECK: Dieses Skript dient als Ladeliste und lädt alle
 #        separat organisierten R-Funktionsdateien in die aktuelle R-Sitzung.
-#        Es stellt sicher, dass alle notwendigen Funktionen vor dem Start
-#        der Hauptanalyse (MAIN.R) verfügbar sind.
+#        Es stellt sicher, dass alle notwendigen Funktionen vor dem eigentlichen
+#        Start der Hauptanalyse (MAIN.R) verfügbar sind.
 # ************************************************************
 
 # Lädt die Funktion zur Paketverwaltung (Installieren und Laden) sowie die Liste der benötigten Pakete.
@@ -29,6 +29,12 @@ source("Scripts/VariablenMapping.R")
 
 #Lädt die Funktion für die Einfche-Bet-Regression
 source("Scripts/Einfach-Beta-Regression.R")
+
+#Lädt die Funktion für die Korrelationsmatrix
+source("Scripts/Korrelationsmatrix.R")
+
+#Lädt die Funktion für den Test der Modellextrapolation
+source("Scripts/ModellextrapolationCheck.R")
 
 # Erfolgsmeldung in der Konsole
 cat("\nScripte geladen\n")

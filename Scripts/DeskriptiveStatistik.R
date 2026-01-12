@@ -12,14 +12,19 @@
 #'
 #' @param column_name Die metrische Spalte, die analysiert werden soll. Wird mit Tidy Evaluation übergeben.
 #' @return Ein Data Frame mit den berechneten deskriptiven Statistiken für die Spalte. Unsichtbare Rückgabe (invisible).
-#' @export
 calculate_descriptive_stats <- function(column_name)
 {
+  # 0. Datenbereinigung (Geometrie weg)
+  df_clean <- data
+  if (inherits(df_clean, "sf")) {
+    df_clean <- sf::st_drop_geometry(df_clean)
+  }
+  
   # 1. Erfassung des Spaltennamens als Klartext-String für die Ausgabe (Konsolenmeldung)
   column_name_str <- rlang::as_label(rlang::enquo(column_name))
   
   # 2. Berechnung der Kennzahlen mithilfe von dplyr::summarise()
-  stats_result <- data |>
+  stats_result <- df_clean |>
     dplyr::summarise(
       Mittelwert = round(mean({{ column_name }}, na.rm = TRUE),NACHKOMMASTELLEN),
       Minimum = round(min({{ column_name }}, na.rm = TRUE),NACHKOMMASTELLEN),

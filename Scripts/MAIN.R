@@ -20,28 +20,27 @@ source("Scripts/LoadScripts.R")
 # Ruft die Funktion auf, um alle benötigten R-Pakete (z.B. ggplot2, dplyr) zu installieren und zu laden.
 load_packages(required_packages)
 
-# 1.4. Datensatz laden vorbereiten
+# 1.3. Datensatz laden und vorbereiten
 # Ruft die Funktion auf, um neue, abgeleitete Variablen zu erstellen (z.B. 'bildung_hoch')
 # und den Datensatz für die Analyse vorzubereiten.
 data <- datensatz_vorbereiten()
-View(data)
 
 # ************************************************************
 
-# 2. Deskriptive Statistik: ----
+# 2. Initial Data Analysis: ----
 # ------------------------------------------------------------
 # Globale Steuerung der Ausgabe und Visualisierung
 # ------------------------------------------------------------
 
-# Steuert, ob die Ergebnisse der Analysen als Tabellen in der Konsole gedruckt werden sollen (TRUE/FALSE)
-IS_TABLE_OUTPUT_ENABLED <- FALSE 
+# Sollen Tbellen neu berechnet und überspeichert werden?
+IS_TABLE_OUTPUT_ENABLED <- TRUE #(TRUE/FALSE)
 
-# Steuert, ob Plots/Diagramme erstellt und in der Konsole/im Plot-Fenster angezeigt werden sollen (TRUE/FALSE)
-IS_PLOT_OUTPUT_ENABLED <- FALSE  
-
+# Sollen Abbildungen neu berechnet und überspeichert werden?
+IS_PLOT_OUTPUT_ENABLED <- FALSE #(TRUE/FALSE)
 
 # Faktor zur Skalierung der Klassenanzahl (Bins) in Histogrammen.
 # Je höher der Wert, desto feiner die Darstellung (mehr Säulen).
+# Nachkommastellen benutzten wir nur für den Tabellenoutput, NICHT für die Berechnungen
 HISTOGRAM_BINS_FAKTOR <- 5
 EXPORT_PFAD_TABELLEN = "Tabellen"
 EXPORT_PFAD_ABBILDUNGEN = "Abbildungen"
@@ -99,6 +98,35 @@ all_bivariate_results <- run_multiple_bivariate_analysis(
 run_multiple_bivariate_plotting(
   analysen_liste = bivariate_analysen_to_run
 )
+
+# 2.3 KORRELATIONSMATRIX
+# ------------------------------------------------------------
+# Hier erstelle wir für jedes Model unsere Korreltionsmatrix
+# An diesen können wir prüfen, ob es mögliche Korrelationen gibt
+# ------------------------------------------------------------
+# 2.3 KORRELATIONSMATRIX
+# ------------------------------------------------------------
+# 2.3.1 Für ALLE Variablen
+vars_all <- c(
+  "ausl_proz", "gebursaldo", "wandssaldo", "migration","eigQuote", "wohnbestand", "einkommen", "bip_je_einwohner", "bildung_niedrig", "bildung_mittel", "bildung_hoch", "sgb2_empf", "sgb2_nichterw", "sgb2_auslaender_prozent","arblQuote_gesamt", "arblQuote_maenner", "arblQuote_frauen", "arblQuote_jugend", "arblQuote_senioren", "kath", "evang", "alter_bis_24", "alter_25_59")
+plot_region_correlation(vars_all, "west", "Alle Variablen")
+# ------------------------------------------------------------
+
+# 2.3.2 Für unsere Variablen
+vars_unsere <- c(
+  "ausl_proz", "gebursaldo", "wandssaldo","eigQuote", "wohnbestand", "einkommen","bildung_hoch", "sgb2_auslaender_prozent","kath", "evang", "ost")
+plot_region_correlation(vars_unsere, "west", "Unsere Variablen")
+# ------------------------------------------------------------
+#...Modell Lena, Etienn, Lars
+
+
+# 2.4 Modellextrapolation Check
+# ------------------------------------------------------------
+# Hier prüfen wir, mit welchen Variablen wir gefahr laufen Vorhersagen
+# in einen Bereich zu treffen, den unsere Trainingsdaten nicht hergeben
+# ------------------------------------------------------------
+check_within_interval(vars_unsere, "Unsere Variablen")
+
 
 # ************************************************************
 

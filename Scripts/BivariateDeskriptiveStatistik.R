@@ -14,33 +14,40 @@
   #' @param grouping_column_name String: Name der kategorialen Spalte, nach der gruppiert wird (z.B. "Ost_West").
   #' @return Ein Data Frame, der die zentralen Kennzahlen für jede Gruppe separat ausweist.
   #' @export
-  calculate_bivariate_stats <- function(target_column_name, grouping_column_name)
-  {
-    # Vorbereitung: Wandelt die übergebenen Variablennamen-Strings in R-Objekte um,
-    # damit 'dplyr' sie im Datensatz finden und verwenden kann.
-    target_sym <- rlang::sym(target_column_name)
-    group_sym <- rlang::sym(grouping_column_name)
-    
-    stats_result <- data |>
-      # 1. 'TEILEN' (Split): Der Datensatz wird nach den Werten der Gruppierungsvariable aufgeteilt
-      dplyr::group_by(!!group_sym) |>
-      # 2. 'ANWENDEN & ZUSAMMENFASSEN' (Apply & Combine): Berechnung der Kennzahlen PRO Gruppe
-      dplyr::summarise(
-        Mittelwert = round(mean(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
-        Minimum = round(min(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
-        Quartil_25 = round(quantile(!!target_sym, 0.25,na.rm = TRUE),NACHKOMMASTELLEN),
-        Median = round(median(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
-        Quartil_75 = round(quantile(!!target_sym, 0.75,na.rm = TRUE),NACHKOMMASTELLEN),
-        Maximum = round(max(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
-        Std_Abweichung =round(sd(!!target_sym, na.rm = TRUE),NACHKOMMASTELLEN),
-        Fallzahl_n = dplyr::n(), # Zählt die Fälle (n) pro Gruppe
-        .groups = 'drop' # Beendet die Gruppierung nach der Berechnung
-      )
-    # Fügt die ursprüngliche Zielvariable als Kennzeichnung zur Tabelle hinzu
-    stats_result$Variable <- target_column_name
-    
-    invisible(stats_result) # Gibt den Ergebnis-DF unsichtbar zurück
+calculate_bivariate_stats <- function(target_column_name, grouping_column_name) {
+  
+  # 1. Datenbereinigung (Geometrie weg)
+  df_clean <- data
+  if (inherits(df_clean, "sf")) {
+    df_clean <- sf::st_drop_geometry(df_clean)
   }
+  
+  # 2. Symbole erstellen (WICHTIG: sicherstellen, dass sie existieren)
+  target_sym <- rlang::sym(target_column_name)
+  group_sym  <- rlang::sym(grouping_column_name)
+  
+  # 3. Berechnung
+  # Hinweis: Wir nutzen hier explizit df_clean
+  stats_result <- df_clean %>%
+    dplyr::group_by(!!group_sym) %>%
+    dplyr::summarise(
+      Mittelwert      = round(mean(!!target_sym, na.rm = TRUE), NACHKOMMASTELLEN),
+      Minimum         = round(min(!!target_sym, na.rm = TRUE), NACHKOMMASTELLEN),
+      Quartil_25      = round(as.numeric(quantile(!!target_sym, 0.25, na.rm = TRUE)), NACHKOMMASTELLEN),
+      Median          = round(median(!!target_sym, na.rm = TRUE), NACHKOMMASTELLEN),
+      Quartil_75      = round(as.numeric(quantile(!!target_sym, 0.75, na.rm = TRUE)), NACHKOMMASTELLEN),
+      Maximum         = round(max(!!target_sym, na.rm = TRUE), NACHKOMMASTELLEN),
+      Std_Abweichung  = round(sd(!!target_sym, na.rm = TRUE), NACHKOMMASTELLEN),
+      Fallzahl_n      = dplyr::n(),
+      .groups = 'drop'
+    )
+  
+  # 4. Variable als Spalte hinzufügen
+  stats_result$Variable <- target_column_name
+  
+  # 5. Rückgabe
+  return(stats_result)
+}
   
   # ************************************************************
   # 2. Iterationsfunktion: Führt eine Gruppe von bivariaten Analysen aus

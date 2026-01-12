@@ -78,7 +78,7 @@ plot_multiple_boxplots <- function(df, target_variables, grouping_variable, anal
 }
 
 # ************************************************************
-# 2. Wrapper-Funktion für die Abarbeitung der gesamten Analyse-Liste (Unverändert)
+# 2. Wrapper-Funktion für die Abarbeitung der gesamten Analyse-Liste
 # ************************************************************
 #' Wrapper-Funktion, die alle in der analysen_liste definierten bivariaten Visualisierungen erstellt.
 #' Die Funktion ruft 'plot_multiple_boxplots' für jedes Set von Zielvariablen auf.
