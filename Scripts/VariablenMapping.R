@@ -22,7 +22,10 @@ KLARNAMEN <- c(
   "arblQuote_frauen" = "Frauen",
   "arblQuote_maenner" = "Männer",
   "arblQuote_jugend" = "Jugend",
-  "arblQuote_senioren" = "Senioren"
+  "arblQuote_senioren" = "Senioren",
+  "gebursaldo" = "Geburtensaldo",
+  "wandssaldo" = "Wanderungssaldo",
+  "bip_je_einwohner" = "Durchschn. BIP je Einwohner"
 )
 
 # 2. Klartextnamen für alle Gruppierungsvariablen (Grouping-Variablen)
@@ -38,5 +41,6 @@ GRUPPEN_WERTE_KLARTEXT <- list(
 # 3. Einheiten-Mapping
 # Wird verwendet für: Y-Achsen-Einheit
 EINHEITEN_MAPPING <- c(
-  "einkommen" = "in Euro (€)"
+  "einkommen" = "in Euro (€)",
+  "gebursaldo" = "Merkmalsausprägung"
 )

@@ -126,3 +126,85 @@ run_multiple_bivariate_plotting <- function(analysen_liste)
   cat("\nBivariaten Visualisierungen abgeschlossen.\n")
   return(invisible(NULL))
 }
+
+
+# ************************************************************
+# 1. Kernfunktion: Erstellt den Multi-Boxplot
+# ************************************************************
+#erstellt Verteilungslinien der vriblen 
+plot_multiple_density <- function(df, target_variables, grouping_variable, analyse_name_str) {
+  
+  # 1. Daten umstrukturieren (Pivot: Von "breit" nach "lang")
+  df_long <- df %>%
+    sf::st_drop_geometry() %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(target_variables),
+      names_to = "Zielvariable",
+      values_to = "Wert"
+    ) %>%
+    dplyr::mutate(
+      Gruppe = factor(!!rlang::sym(grouping_variable)),
+      Zielvariable = factor(Zielvariable, levels = target_variables, ordered = TRUE)
+    )
+  
+  # 2. Beschriftungen und Klartext-Lookup (Analog zu Boxplot-Logik)
+  lesbarer_analyse_name <- gsub("_", " ", analyse_name_str)
+  
+  # Legenden-Titel & Werte
+  fill_label <- GROUP_KLARNAMEN[grouping_variable] %||% grouping_variable
+  legenden_werte_map <- GRUPPEN_WERTE_KLARTEXT[[grouping_variable]]
+  
+  # Y-Achse & Titel
+  erste_zielvariable <- target_variables[1]
+  y_einheit <- EINHEITEN_MAPPING[erste_zielvariable] %||% "Prozent"
+  title_str <- paste0("Dichteverteilung: ", lesbarer_analyse_name)
+  subtitle_str <- paste0("Gruppiert nach: ", fill_label)
+  
+  # 3. Der Density Plot
+  density_plot <- ggplot2::ggplot(df_long, 
+                                  ggplot2::aes(x = Wert, 
+                                               fill = Gruppe, 
+                                               color = Gruppe)) +
+    # geom_density mit Transparenz (alpha)
+    ggplot2::geom_density(alpha = 0.4, linewidth = 0.8) +
+    
+    # Facetting: Erstellt für jede Zielvariable ein eigenes Unter-Diagramm
+    # scales = "free" erlaubt jeder X-Achse ihren eigenen Bereich
+    ggplot2::facet_wrap(~Zielvariable, 
+                        scales = "free", 
+                        labeller = ggplot2::as_labeller(KLARNAMEN)) +
+    
+    ggplot2::labs(
+      title = title_str,
+      subtitle = subtitle_str,
+      x = paste0("Wert (", y_einheit, ")"),
+      y = "Dichte (Häufigkeit)",
+      fill = fill_label,
+      color = fill_label
+    ) +
+    
+    # Farbschema
+    ggplot2::scale_fill_manual(values = c("0" = "darkblue", "1" = "firebrick"), 
+                               labels = legenden_werte_map) +
+    ggplot2::scale_color_manual(values = c("0" = "darkblue", "1" = "firebrick"), 
+                                labels = legenden_werte_map) +
+    
+    ggplot2::scale_y_continuous(labels = scales::label_number()) + # Verhindert 6e-04
+    
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      strip.text = ggplot2::element_text(face = "bold"), # Überschriften der Facets
+      legend.position = "bottom"
+    )
+  
+  # 4. Optional: Speichern oder Ausgeben
+  if (IS_PLOT_OUTPUT_ENABLED) {
+    print(density_plot)
+    
+    # Speicher-Logik
+    file_path <- file.path(EXPORT_PFAD_ABBILDUNGEN, paste0("Dichte_", analyse_name_str, ".png"))
+    ggplot2::ggsave(file_path, plot = density_plot, width = 20, height = 14, units = "cm", dpi = 300)
+  }
+  
+  return(invisible(density_plot))
+}

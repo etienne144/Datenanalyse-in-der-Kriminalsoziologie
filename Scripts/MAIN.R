@@ -36,7 +36,7 @@ data <- datensatz_vorbereiten()
 IS_TABLE_OUTPUT_ENABLED <- TRUE #(TRUE/FALSE)
 
 # Sollen Abbildungen neu berechnet und überspeichert werden?
-IS_PLOT_OUTPUT_ENABLED <- FALSE #(TRUE/FALSE)
+IS_PLOT_OUTPUT_ENABLED <- TRUE #(TRUE/FALSE)
 
 # Faktor zur Skalierung der Klassenanzahl (Bins) in Histogrammen.
 # Je höher der Wert, desto feiner die Darstellung (mehr Säulen).
@@ -99,6 +99,13 @@ run_multiple_bivariate_plotting(
   analysen_liste = bivariate_analysen_to_run
 )
 
+# Visuliiserung mittels Verteilungskurven
+vars_sozio <- c("einkommen", "bip_je_einwohner")
+plot_multiple_density(data, vars_sozio, "ost", "des_Wirtschaftsstruktur")
+
+  vars_sozio <- c("gebursaldo", "wandssaldo")
+plot_multiple_density(data, vars_sozio, "ost", "Bevölkerungsentwicklung")
+
 # 2.3 KORRELATIONSMATRIX
 # ------------------------------------------------------------
 # Hier erstelle wir für jedes Model unsere Korreltionsmatrix
@@ -126,10 +133,11 @@ plot_region_correlation(vars_unsere, "west", "Unsere Variablen")
 # in einen Bereich zu treffen, den unsere Trainingsdaten nicht hergeben
 # ------------------------------------------------------------
 check_within_interval(vars_unsere, "Unsere Variablen")
+# ------------------------------------------------------------
+#...Modell Lena, Etienn, Lars
 
 
 # ************************************************************
-
 # 3. Beta-Regression----
 # ------------------------------------------------------------
 data <- datensatz_vorbereiten_regression(df = data)
