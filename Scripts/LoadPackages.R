@@ -19,8 +19,10 @@ required_packages <- c("here",         # Für die einfache Pfadverwaltung in Pro
                        "broom",
                        "kableExtra",
                        "knitr",
-                       "sf", #braucht es irgendwie für die Geodaten
-                       "pradadata" #der Datensatz
+                       "sf", #braucht es für die Geodaten
+                       "pradadata", #der Datensatz
+                       "DHARMa", #für die simulation der Residuen
+                       "broom.mixed" #keine Ahnung was der Unterschied zu nur broom ist
                        )
 
 # ************************************************************

@@ -36,5 +36,11 @@ source("Scripts/Korrelationsmatrix.R")
 #Lädt die Funktion für den Test der Modellextrapolation
 source("Scripts/ModellextrapolationCheck.R")
 
+#Lädt die Funktion für das Westmodel
+source("Scripts/WestModell.R")
+
+#Lädt die Funktionen für die visualiserung
+source("Scripts/WestModellVisualisierung.R")
+
 # Erfolgsmeldung in der Konsole
 cat("\nScripte geladen\n")

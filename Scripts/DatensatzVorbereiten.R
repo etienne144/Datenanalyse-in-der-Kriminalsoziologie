@@ -41,7 +41,12 @@ datensatz_vorbereiten_regression <- function(df = data)
       dplyr::across(
         .cols = dplyr::ends_with("_prop"), 
         .fns = ~ .x / 100
-      )
+      ),
+      # 2. Skalierung des Einkommens (Optional, aber empfohlen)
+      # Wir teilen durch 1.000. Ein 'estimate' von -0.05 bedeutet dann:
+      # "Pro 1.000 Euro mehr Einkommen sinkt die Log-Odds der AfD-Wahl um 0.05"
+      einkommen = einkommen / 1000,
+      einkommen_sq = einkommen^2
     )
   
   cat("\nDatensatz vorbereitet für Regression\n")

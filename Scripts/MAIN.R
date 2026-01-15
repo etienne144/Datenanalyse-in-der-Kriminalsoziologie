@@ -3,7 +3,8 @@
 # ZWECK: Dieses Skript dient als zentrale Steuereinheit (Master-Skript)
 #        für die gesamte Datenanalyse und Visualisierung.
 #        Es lädt alle Funktionen und Daten, setzt globale Parameter
-#        und führt die univariaten und bivariaten Analysen durch.
+#        und führt die univariaten und bivariaten Analysen, 
+#        sowie die Beta-Regression durch.
 # ************************************************************
 
 # 1. SETUP:----
@@ -89,19 +90,20 @@ run_univariate_plotting(spalten_liste = spalten_von_interesse)
 )
 # Startet alle Bivariaten Analysen in einem Aufruf
 # Ruft die Wrapper-Funktion auf, die nacheinander jede Analyse in der Liste durchführt.
-# Die Ergebnisse werden in 'all_bivariate_results' gespeichert (eine Liste von Data Frames).
+# Die Ergebnisse werden in 'exceltabllen gespeichert gespeichert (eine Liste von Data Frames).
 all_bivariate_results <- run_multiple_bivariate_analysis(
   analysen_liste = bivariate_analysen_to_run
 )
 
-# Startet alle Bivariaten Visualisierungen (Boxplots)
+# Startet alle Bivariaten Visualisierungen mithilfe multipler Boxplotsdar
 run_multiple_bivariate_plotting(
   analysen_liste = bivariate_analysen_to_run
 )
 
+#Für ausgewählte Variabeln, können wir diese auch nochmal als Verteilungskurven zwischen Ost/west darstel
 # Visuliiserung mittels Verteilungskurven
 vars_sozio <- c("einkommen", "bip_je_einwohner")
-plot_multiple_density(data, vars_sozio, "ost", "des_Wirtschaftsstruktur")
+plot_multiple_density(data, vars_sozio, "ost", "Wirtschaftsstruktur")
 
   vars_sozio <- c("gebursaldo", "wandssaldo")
 plot_multiple_density(data, vars_sozio, "ost", "Bevölkerungsentwicklung")
@@ -121,18 +123,20 @@ plot_region_correlation(vars_all, "west", "Alle Variablen")
 
 # 2.3.2 Für unsere Variablen
 vars_unsere <- c(
-  "ausl_proz", "gebursaldo", "wandssaldo","eigQuote", "wohnbestand", "einkommen","bildung_hoch", "sgb2_auslaender_prozent","kath", "evang", "ost")
+  "ausl_proz", "gebursaldo", "wandssaldo","eigQuote", "wohnbestand", "einkommen","bildung_hoch", "sgb2_auslaender_prozent","kath", "evang")
 plot_region_correlation(vars_unsere, "west", "Unsere Variablen")
 # ------------------------------------------------------------
 #...Modell Lena, Etienn, Lars
-
+vars_model_II <- c(
+  "gebursaldo", "wandssaldo", "einkommen", "einkommen_sq")
+plot_region_correlation(vars_model_II, "west", "Variablen Modell II")
 
 # 2.4 Modellextrapolation Check
 # ------------------------------------------------------------
 # Hier prüfen wir, mit welchen Variablen wir gefahr laufen Vorhersagen
 # in einen Bereich zu treffen, den unsere Trainingsdaten nicht hergeben
 # ------------------------------------------------------------
-check_within_interval(vars_unsere, "Unsere Variablen")
+check_within_interval(vars_unsere, "Modell 2")
 # ------------------------------------------------------------
 #...Modell Lena, Etienn, Lars
 
@@ -140,20 +144,19 @@ check_within_interval(vars_unsere, "Unsere Variablen")
 # ************************************************************
 # 3. Beta-Regression----
 # ------------------------------------------------------------
-data <- datensatz_vorbereiten_regression(df = data)
-# Die zentrale Liste, welche die Betaregressionsmodelle speichert
-beta_analysen_to_run <- list(
-  
-  AfD_Einkommen = list(
-    y_name = "afd_prop", # Abhängige Variable
-    x_names = c("einkommen") # Unabhängige Variable(n)
-  ),
-   
-  AFD_verlorenerOrt = list(
-    y_name = "afd_prop", # Abhängige Variable                                   Hier falls ihr interaktionen prüfen wollt
-    x_names = c( "gebursaldo", "wohnbestand", "wandssaldo", "arblQuote_jugend", "arblQuote_jugend:wohnbestand") # Unabhängige Variable(n)
-  )
-)
+# 3.1 Die WEST-Modelle 
+# Hier berechnen wir, evaluieren und visualiseren wir zunächst
+# jedes unserer Modelle
+data <- datensatz_vorbereiten_regression(data)
+# ------------------------------------------------------------
+# 3.1.1 Lena
 
-# Aufruf der Loop-Funktion
-Einfach_Beta_Regressions_Loop(beta_analysen_to_run)
+# ------------------------------------------------------------
+# 3.1.2 Etienne
+west_model_ii <- fit_west_model(vars_model_II, model_label = "Modell 2")
+visualize_west_diagnostics(west_model_ii, "Modell_1")
+# ------------------------------------------------------------
+
+
+
+
