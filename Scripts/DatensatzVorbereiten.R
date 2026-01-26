@@ -46,7 +46,11 @@ datensatz_vorbereiten_regression <- function(df = data)
       # Wir teilen durch 1.000. Ein 'estimate' von -0.05 bedeutet dann:
       # "Pro 1.000 Euro mehr Einkommen sinkt die Log-Odds der AfD-Wahl um 0.05"
       einkommen = einkommen / 1000,
-      einkommen_sq = einkommen^2
+      einkommen_sq = einkommen^2,
+      kath_sq = kath^2,
+      evang_sq = evang^2,
+      wohnbestand_sq = wohnbestand^2
+      
     )
   
   cat("\nDatensatz vorbereitet für Regression\n")

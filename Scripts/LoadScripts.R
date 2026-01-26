@@ -42,5 +42,14 @@ source("Scripts/WestModell.R")
 #Lädt die Funktionen für die visualiserung
 source("Scripts/WestModellVisualisierung.R")
 
+#Lädt die Funktion für die Residuenberechnung
+source("Scripts/ResiduenBerechnen.R")
+
+#Lädt die Funktion für die Visualisierung der Residuen
+source("Scripts/ResiduenVisualisieren.R")
+
+#Lädt die Funktion für die Visualisierung der Karte
+source("Scripts/KarteErstellen.R")
+
 # Erfolgsmeldung in der Konsole
 cat("\nScripte geladen\n")
