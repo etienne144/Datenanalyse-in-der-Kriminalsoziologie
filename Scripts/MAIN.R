@@ -40,8 +40,8 @@ data <- datensatz_vorbereiten()
 # ==============================================================================
 # Steuerung des Outputs: Sollen Dateien neu erstellt werden?
 
-IS_TABLE_OUTPUT_ENABLED <- TRUE  # Bei TRUE werden Excel-Tabellen exportiert
-IS_PLOT_OUTPUT_ENABLED  <- TRUE  # Bei TRUE werden Grafiken als PNG gespeichert
+IS_TABLE_OUTPUT_ENABLED <- FALSE  # Bei TRUE werden Excel-Tabellen exportiert
+IS_PLOT_OUTPUT_ENABLED  <- FALSE  # Bei TRUE werden Grafiken als PNG gespeichert
 
 # Pfade für den Export
 EXPORT_PFAD_TABELLEN    <- "Tabellen"
@@ -172,7 +172,8 @@ plot_region_correlation(vars_model_II, "west", "Variablen Modell_II")
 vars_model_III <- c("wohnbestand", "wohnbestand_sq", "ausl_proz", "einkommen", "einkommen_sq")
 plot_region_correlation(vars_model_III, "west", "Variablen Modell_III")
 
-
+vars_model_gesamt <- c("bildung_niedrig", "kath", "evang", "kath_sq", "evang_sq","gebursaldo", "einkommen", "einkommen_sq","wohnbestand", "wohnbestand_sq")
+plot_region_correlation(vars_model_gesamt, "west", "Variablen Modell_gesamt")
 # ------------------------------------------------------------------------------
 # 3.5 Extrapolations-Check (Support Overlap)
 # ------------------------------------------------------------------------------
@@ -208,28 +209,112 @@ visualize_west_diagnostics(west_model_ii, "Modell_II")
 west_model_iii <- fit_west_model(vars_model_III, model_label = "Modell_III")
 visualize_west_diagnostics(west_model_iii, "Modell_III")
 
+west_model_gesamt <- fit_west_model(vars_model_gesamt, model_label = "Modell_gesamt")
 
 # ------------------------------------------------------------------------------
-# 4.2 Residuenanalyse (Wo irrt das Modell?)
+# 4.2 Residuenanalyse Westdeutschland (Wo irrt das Modell?)
 # ------------------------------------------------------------------------------
 # Wir berechnen die Abweichung (Residuum) zwischen der Modell-Vorhersage
 # und dem tatsächlichen Wahlergebnis.
-
 # --- Analyse Modell I ---
-calculate_and_export_residuals(west_model_i, data, "west", "Model_I")
-plot_residual_histogram(west_model_i, data, "west", "Model_I")
-plot_residual_map(west_model_i, data, "west", "Modell_I")
+calculate_and_export_residuals(west_model_i, "west", "Model_I")
+plot_residual_histogram(west_model_i, "west", "Model_I")
+plot_residual_map(west_model_i,  "west", "Modell_I")
 
 # --- Analyse Modell II ---
-calculate_and_export_residuals(west_model_ii, data, "west", "Model_II")
-plot_residual_histogram(west_model_ii, data, "west", "Model_II")
-plot_residual_map(west_model_ii, data, "west", "Modell_II")
+calculate_and_export_residuals(west_model_ii, "west", "Model_II")
+plot_residual_histogram(west_model_ii,"west", "Model_II")
+plot_residual_map(west_model_ii,  "west", "Modell_II")
 
 # --- Analyse Modell III ---
-calculate_and_export_residuals(west_model_iii, data, "west", "Model_III")
-plot_residual_histogram(west_model_iii, data, "west", "Model_III")
-plot_residual_map(west_model_iii, data, "west", "Modell_III")
+calculate_and_export_residuals(west_model_iii,"west", "Model_III")
+plot_residual_histogram(west_model_iii, "west", "Model_III")
+plot_residual_map(west_model_iii, "west", "Modell_III")
 
+# --- Analyse Modell IV ---
+calculate_and_export_residuals(west_model_gesamt,"west", "Model_gesamt")
+plot_residual_histogram(west_model_gesamt, "west", "Model_gesamt")
+plot_residual_map(west_model_gesamt, "west", "Modell_gesamt")
+
+
+
+# ==============================================================================
+# 5. TRANSFERANALYSE (Die "Nagelprobe" im Osten)
+# ==============================================================================
+# ZIEL:
+# Wir testen die Generalisierbarkeit der West-Modelle.
+# Hypothese: Wenn strukturelle Gründe (Ökonomie, Konflikt) die AfD-Wahl erklären,
+# müsste das West-Modell auch die Ergebnisse im Osten vorhersagen können.
+# Jede verbleibende Abweichung deutet auf spezifische "Ost-Effekte" (Kultur) hin.
+
+# ------------------------------------------------------------------------------
+# 5.1 Der Niveau-Check (Tabellarischer Beweis)
+# ------------------------------------------------------------------------------
+
+# A. Den Benchmark setzen (Das "Null-Szenario")
+# Wir berechnen zuerst, wie hoch die AfD im Osten durchschnittlich ist,
+# OHNE dass wir irgendwelche Erklärungsfaktoren berücksichtigen.
+# Das ist unser Referenzwert (ca. 19,5%).
+ost_null_model <- calculate_null_model()
+
+# Wir speichern uns diesen "Basis-Wert" als Anker für alle Vergleiche
+null_intercept <- fixef(ost_null_model)$cond["(Intercept)"]
+check_ost_niveau(ost_null_model, "Nullmodell", null_intercept)
+
+
+# B. Die Modelle testen (Struktur vs. Kultur)
+# Wir wenden jetzt die Logik aus dem Westen (Koeffizienten) auf den Osten an.
+# Die Funktion 'check_ost_niveau' berechnet dabei automatisch:
+# 1. Die Prognose: Was "denkt" das Modell, wie stark die AfD sein müsste?
+# 2. Den Fehler: Wie viele Prozentpunkte fehlen zur Realität?
+
+# Test 1: Reicht Kultur & Bildung als Erklärung?
+# Erwartung: Vermutlich großer Restfehler, da ökonomische Sorgen fehlen.
+ost_model_i <- ost_transfer(west_model_i, "Modell_I")
+check_ost_niveau(ost_model_i, "Modell_I", null_intercept)
+
+# Test 2: Reicht die reine Ökonomie?
+ost_model_ii <- ost_transfer(west_model_ii, "Modell_II_Econ")
+check_ost_niveau(ost_model_ii, "Modell_II_Econ", null_intercept)
+
+# Test 3: Die Konflikttheorie (Wohnen + Ökonomie)
+# Erwartung: Hier sollte der Fehler am kleinsten sein ("Der Gewinner").
+ost_model_iii <- ost_transfer(west_model_iii, "Modell_III_Konflikt")
+check_ost_niveau(ost_model_iii, "Modell_III_Konflikt", null_intercept)
+
+# Test 4: Das Gesamtmodell (Alles zusammen)
+ost_model_gesamt <- ost_transfer(west_model_gesamt, "Modell_Gesamt")
+check_ost_niveau(ost_model_gesamt, "Modell_Gesamt", null_intercept)
+
+
+# ------------------------------------------------------------------------------
+# 5.2 Residuenanalyse Ost (Die Landkarte der unerklärten Reste)
+# ------------------------------------------------------------------------------
+# Hier visualisieren wir geografisch, wo die Modelle versagen.
+# Wir nutzen die Transfer-Modelle und geben das West-Modell als "Elternteil" mit,
+# damit die Vorhersage (Offset) korrekt berechnet werden kann.
+
+# --- Visualisierung Modell I (Kultur) ---
+# Zeigt wahrscheinlich viel "ROT" (Unterschätzung der AfD im gesamten Osten)
+calculate_and_export_residuals(ost_model_i, "ost", "Model_I", west_model = west_model_i)
+plot_residual_histogram(ost_model_i, "ost", "Model_I") # Wie verteilen sich die Fehler?
+plot_transfer_map(west_model_i, data_ost, "Modell_I")  # Wo sind die Fehler? (Karte)
+
+# --- Visualisierung Modell II (Ökonomie) ---
+calculate_and_export_residuals(ost_model_ii, "ost", "Model_II", west_model = west_model_ii)
+plot_residual_histogram(ost_model_ii, "ost", "Model_II")
+plot_transfer_map(west_model_ii, data_ost, "Modell_II")
+
+# --- Visualisierung Modell III (Konflikt) ---
+# Hier hoffen wir auf blassere Farben (bessere Erklärungskraft).
+calculate_and_export_residuals(ost_model_iii, "ost", "Model_III", west_model = west_model_iii)
+plot_residual_histogram(ost_model_iii, "ost", "Model_III")
+plot_transfer_map(west_model_iii, data_ost, "Modell_III")
+
+# --- Visualisierung Gesamtmodell ---
+calculate_and_export_residuals(ost_model_gesamt, "ost", "Model_Gesamt", west_model = west_model_gesamt)
+plot_residual_histogram(ost_model_gesamt, "ost", "Model_Gesamt")
+plot_transfer_map(west_model_gesamt, data_ost, "Modell_Gesamt")
 
 # ******************************************************************************
 # ENDE DES SKRIPTS

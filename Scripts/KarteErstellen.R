@@ -45,10 +45,10 @@ plot_residual_map <- function(model, region, modelnummer) {
   plot_title <- paste0("Räumliche Residuen: ", region, " (", modelnummer, ")")
   
   # 1. Limits anpassen: +/- 15
-  limit_val <- 5
+  limit_val <- 15
   
   # 2. Graue Zone definieren: Alles zwischen -1 und +1 bleibt grau
-  grey_threshold <- 1 
+  grey_threshold <- 0.5 
   
   color_limits <- c(-limit_val, limit_val)
   

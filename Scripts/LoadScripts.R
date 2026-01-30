@@ -51,5 +51,8 @@ source("Scripts/ResiduenVisualisieren.R")
 #Lädt die Funktion für die Visualisierung der Karte
 source("Scripts/KarteErstellen.R")
 
+source("Scripts/ÜbertragungWestaufOst.R")
+
+source("Scripts/OstWestThesenCheck.R")
 # Erfolgsmeldung in der Konsole
 cat("\nScripte geladen\n")
