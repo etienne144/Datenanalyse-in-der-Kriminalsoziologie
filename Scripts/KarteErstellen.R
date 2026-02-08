@@ -1,98 +1,126 @@
 # ==============================================================================
-# Funktion: Karte der Residuen erstellen (Geovisualisierung)
+# Funktion: plot_residual_map (FINAL & FLEXIBEL)
 # ==============================================================================
-# Visualisiert die räumliche Verteilung der Modellfehler.
-# Flexibilität: Funktioniert für West, Ost oder Gesamtdeutschland.
-# Voraussetzung: 'data' muss ein sf-Objekt (Shapefile) sein!
+# ZWECK:
+# Visualisiert die räumliche Verteilung der Modellfehler (Residuen).
+#
+# NEUERUNG (WICHTIG):
+# Die Funktion akzeptiert jetzt ein optionales Argument 'west_model'.
+#
+# 1. Nutzung OHNE west_model:
+#    - Standardfall. Wir testen, wie gut ein Modell "aus sich heraus" vorhersagt.
+#    - Wird genutzt für den harten Ost-West-Vergleich (Struktur-Check).
+#
+# 2. Nutzung MIT west_model:
+#    - Spezialfall für Transfermodelle.
+#    - Da unsere Ost-Modelle einen fixen "Offset" (die West-Steigung) brauchen,
+#      übergeben wir hier das West-Modell als "Anker".
+#    - Die Funktion berechnet dann erst den Offset und dann die Binnen-Vorhersage.
 # ==============================================================================
 
-plot_residual_map <- function(model, region, modelnummer) {
+plot_residual_map <- function(model, region, modelnummer, west_model = NULL) {
+  
+  message(paste0(">>> Starte Karten-Erstellung für: ", modelnummer, " (Region: ", region, ")"))
   
   # ---------------------------------------------------------
-  # A. Daten filtern (Flexibel für West/Ost/Gesamt)
+  # A. Daten filtern (Region auswählen)
   # ---------------------------------------------------------
+  # Wir prüfen, ob wir ganz Deutschland oder nur Ost/West wollen.
   
-  # Wir prüfen, ob "gesamt" oder "deutschland" im Regions-Namen steckt.
-  # Falls ja: Kein Filter (wir nehmen alle Wahlkreise).
   is_gesamt <- grepl("gesamt", tolower(region))
   
   if (is_gesamt) {
-    message(">>> Erstelle Karte für Gesamtdeutschland...")
-    df_map <- data # Keine Filterung
+    # Fall 1: Gesamtdeutschland
+    df_map <- data 
   } else {
-    # Falls nicht gesamt, prüfen wir ob West oder Ost
+    # Fall 2: Ost oder West (0 oder 1)
     target_ost <- if (grepl("west", tolower(region))) 0 else 1
-    
-    df_map <- data %>%
-      dplyr::filter(ost == target_ost)
+    df_map <- data %>% dplyr::filter(ost == target_ost)
   }
   
   # ---------------------------------------------------------
-  # B. Residuen berechnen
+  # B. Residuen berechnen (Hier ist die neue Logik!)
   # ---------------------------------------------------------
-  # WICHTIG: Das Modell muss zur Region passen!
   
+  # SCHRITT B1: Offset berechnen (Nur nötig für Binnen-Modelle)
+  # Wenn wir das Transfer-Modell (mit 1|state) plotten wollen, braucht es
+  # zwingend die Information, was das West-Modell "denkt" (den Linear Predictor).
+  if (!is.null(west_model)) {
+    message("    -> Info: Berechne Offset-Werte aus dem West-Modell...")
+    df_map$linear_predictor <- predict(west_model, newdata = df_map, type = "link", allow.new.levels = TRUE)
+  }
+  
+  # SCHRITT B2: Die eigentliche Vorhersage und Fehlerberechnung
   df_map <- df_map %>%
     dplyr::mutate(
-      pred_temp = predict(model, newdata = ., type = "response"),
-      # Umrechnung in Prozentpunkte (* 100)
+      # Vorhersage des Modells (in % Wahrscheinlichkeit)
+      # predict() ist schlau: Wenn 'linear_predictor' existiert (siehe oben),
+      # nutzt es diesen automatisch für den Offset.
+      pred_temp = predict(model, newdata = ., type = "response", allow.new.levels = TRUE),
+      
+      # Residuum berechnen: Realität minus Vorhersage
+      # Beispiel: Real 20% - Vorhersage 10% = +10 (Positiv)
+      # Positiv (+) -> AfD stärker als gedacht -> BLAU (Unterschätzung)
+      # Negativ (-) -> AfD schwächer als gedacht -> ROT (Überschätzung)
       resids    = (afd_prop - pred_temp) * 100
     )
   
   # ---------------------------------------------------------
-  # C. Plot erstellen
+  # C. Plot erstellen (ggplot2)
   # ---------------------------------------------------------
   plot_title <- paste0("Räumliche Residuen: ", region, " (", modelnummer, ")")
   
-  # 1. Limits anpassen: +/- 15
+  # Grenzen für die Farbskala festlegen (+/- 15 Prozentpunkte)
   limit_val <- 15
   
-  # 2. Graue Zone definieren: Alles zwischen -1 und +1 bleibt grau
+  # Graue Zone definieren (kleine Fehler +/- 0.5% bleiben grau)
   grey_threshold <- 0.5 
   
+  # Skalierung vorbereiten
   color_limits <- c(-limit_val, limit_val)
-  
-  # 3. Ankerpunkte setzen (skaliert auf 0-1 für ggplot)
   color_values <- scales::rescale(c(-limit_val, -grey_threshold, grey_threshold, limit_val))
   
-  # 4. Farben (Rot -> Grau -> Grau -> Blau)
+  # Farben definieren (Rot = Überschätzt, Blau = Unterschätzt)
   my_colors <- c("red", "grey80", "grey80", "blue")
   
-  p_map <- ggplot(df_map) +
-    geom_sf(aes(fill = resids), color = "white", size = 0.1) +
+  p_map <- ggplot2::ggplot(df_map) +
+    # Die Karte zeichnen
+    ggplot2::geom_sf(ggplot2::aes(fill = resids), color = "white", lwd = 0.1) +
     
-    scale_fill_gradientn(
+    # Die Farben anwenden
+    ggplot2::scale_fill_gradientn(
       colours  = my_colors,
       values   = color_values,
       limits   = color_limits,
-      oob      = scales::squish, # Alles über 15 wird dunkelblau/rot
+      oob      = scales::squish, # Alles über 15 wird dunkelblau/rot gekappt
       na.value = "grey90",
       name     = "Residuen in %"
     ) +
     
-    labs(
+    # Beschriftung
+    ggplot2::labs(
       title = plot_title,
-      subtitle = "Rot = Modell überschätzt AfD | Blau = Modell unterschätzt AfD"
+      caption  = paste0("Modell: ", modelnummer)
     ) +
     
-    theme_void() + 
-    theme(
+    # Layout bereinigen (keine Achsen, weißer Hintergrund)
+    ggplot2::theme_void() + 
+    ggplot2::theme(
       legend.position = "right",
-      plot.title = element_text(hjust = 0.5, face = "bold"),
-      plot.subtitle = element_text(hjust = 0.5)
+      plot.title      = ggplot2::element_text(hjust = 0.5, face = "bold"),
+      plot.subtitle   = ggplot2::element_text(hjust = 0.5, color = "grey40", size = 9)
     )
   
   # ---------------------------------------------------------
-  # D. Export & Return
+  # D. Export & Ausgabe
   # ---------------------------------------------------------
-  if (IS_PLOT_OUTPUT_ENABLED) {
+  if (exists("IS_PLOT_OUTPUT_ENABLED") && IS_PLOT_OUTPUT_ENABLED) {
     dateiname <- paste0("Karte_Residuen_", region, "_", modelnummer, ".png")
     speicherpfad <- file.path(EXPORT_PFAD_ABBILDUNGEN, dateiname)
     
-    ggsave(filename = speicherpfad, plot = p_map, width = 12, height = 14, dpi = 300, bg = "white")
-    message(paste0(">>> Karte gespeichert: ", speicherpfad))
-  } else {
-    message("--- Export von Abbildungen deaktiviert ---")
+    # Speichern in hoher Qualität
+    ggplot2::ggsave(filename = speicherpfad, plot = p_map, width = 10, height = 8, dpi = 300, bg = "white")
+    message(paste0("    -> Karte gespeichert unter: ", speicherpfad))
   }
   
   print(p_map)

@@ -16,7 +16,7 @@ ost_transfer <- function(west_model, model_label) {
     dplyr::filter(ost == 1)
   
   # 2. Vorhersage berechnen
-  data_ost$linear_predictor <- predict(west_model, newdata = data_ost, type = "link")
+  data_ost$linear_predictor <- predict(west_model, newdata = data_ost, type = "link",allow.new.levels = TRUE)
   
   # 3. Das Transfer-Modell rechnen.
   transfer_model <- glmmTMB::glmmTMB(

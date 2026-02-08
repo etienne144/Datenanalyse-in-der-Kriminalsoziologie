@@ -34,21 +34,20 @@ load_packages(required_packages)
 # Das Ergebnis ist der Hauptdatensatz 'data'.
 data <- datensatz_vorbereiten()
 
-
 # ==============================================================================
 # 2. GLOBALE EINSTELLUNGEN
 # ==============================================================================
 # Steuerung des Outputs: Sollen Dateien neu erstellt werden?
 
-IS_TABLE_OUTPUT_ENABLED <- FALSE  # Bei TRUE werden Excel-Tabellen exportiert
-IS_PLOT_OUTPUT_ENABLED  <- FALSE  # Bei TRUE werden Grafiken als PNG gespeichert
+IS_TABLE_OUTPUT_ENABLED <- TRUE  # Bei TRUE werden Excel-Tabellen exportiert
+IS_PLOT_OUTPUT_ENABLED  <- TRUE  # Bei TRUE werden Grafiken als PNG gespeichert
 
 # Pfade für den Export
 EXPORT_PFAD_TABELLEN    <- "Tabellen"
 EXPORT_PFAD_ABBILDUNGEN <- "Abbildungen"
 
 # Darstellungsparameter
-HISTOGRAM_BINS_FAKTOR   <- 5  # Feinheit der Balken in Histogrammen
+HISTOGRAM_BINS_FAKTOR   <- 4  # Feinheit der Balken in Histogrammen
 NACHKOMMASTELLEN        <- 2  # Rundung in Tabellen
 
 
@@ -61,7 +60,7 @@ NACHKOMMASTELLEN        <- 2  # Rundung in Tabellen
 # ------------------------------------------------------------------------------
 # Wir betrachten zunächst nur die Wahlergebnisse der Parteien.
 spalten_von_interesse <- c("afd_prop", "linke_prop", "spd_prop", 
-                           "b90_prop", "fdp_prop", "union_prop")
+                           "b90_prop", "fdp_prop", "ost")
 
 # Berechnung der Kennzahlen (Mittelwert, Median, SD)
 all_stats_df <- run_descriptive_analysis(spalten_liste = spalten_von_interesse)
@@ -161,7 +160,7 @@ plot_region_correlation(vars_unsere, "west", "Unsere Variablen")
 
 # 3. Spezifische Korrelationen pro Modell-Idee
 # Modell I (Kultur/Religion/Bildung)
-vars_model_I <- c("bildung_niedrig", "kath", "evang", "kath_sq", "evang_sq")
+vars_model_I <- c("bildung_hoch", "kath", "evang", "kath_sq", "evang_sq")
 plot_region_correlation(vars_model_I, "west", "Variablen Modell_I")
 
 # Modell II (Ökonomie/Demografie)
@@ -205,11 +204,12 @@ west_model_ii <- fit_west_model(vars_model_II, model_label = "Modell_II")
 visualize_west_diagnostics(west_model_ii, "Modell_II")
 
 # --- Modell III (Wohnraum & Konflikt) ---
-# Enthält jetzt quadratische Terme für Wohnbestand und Einkommen
 west_model_iii <- fit_west_model(vars_model_III, model_label = "Modell_III")
 visualize_west_diagnostics(west_model_iii, "Modell_III")
 
+# --- Gesamtmodell ---
 west_model_gesamt <- fit_west_model(vars_model_gesamt, model_label = "Modell_gesamt")
+visualize_west_diagnostics(west_model_gesamt, "Modell_gesamt")
 
 # ------------------------------------------------------------------------------
 # 4.2 Residuenanalyse Westdeutschland (Wo irrt das Modell?)
@@ -239,14 +239,11 @@ plot_residual_map(west_model_gesamt, "west", "Modell_gesamt")
 
 
 # ==============================================================================
-# 5. TRANSFERANALYSE (Die "Nagelprobe" im Osten)
+# 5. TRANSFERANALYSE
 # ==============================================================================
 # ZIEL:
 # Wir testen die Generalisierbarkeit der West-Modelle.
-# Hypothese: Wenn strukturelle Gründe (Ökonomie, Konflikt) die AfD-Wahl erklären,
-# müsste das West-Modell auch die Ergebnisse im Osten vorhersagen können.
 # Jede verbleibende Abweichung deutet auf spezifische "Ost-Effekte" (Kultur) hin.
-
 # ------------------------------------------------------------------------------
 # 5.1 Der Niveau-Check (Tabellarischer Beweis)
 # ------------------------------------------------------------------------------
@@ -264,21 +261,19 @@ check_ost_niveau(ost_null_model, "Nullmodell", null_intercept)
 
 # B. Die Modelle testen (Struktur vs. Kultur)
 # Wir wenden jetzt die Logik aus dem Westen (Koeffizienten) auf den Osten an.
-# Die Funktion 'check_ost_niveau' berechnet dabei automatisch:
+# Die Funktion 'check_ost_niveau' berechnet dabei:
 # 1. Die Prognose: Was "denkt" das Modell, wie stark die AfD sein müsste?
 # 2. Den Fehler: Wie viele Prozentpunkte fehlen zur Realität?
 
 # Test 1: Reicht Kultur & Bildung als Erklärung?
-# Erwartung: Vermutlich großer Restfehler, da ökonomische Sorgen fehlen.
 ost_model_i <- ost_transfer(west_model_i, "Modell_I")
 check_ost_niveau(ost_model_i, "Modell_I", null_intercept)
 
-# Test 2: Reicht die reine Ökonomie?
+# Test 2: Reicht Bevölkerungsentiwcklung?
 ost_model_ii <- ost_transfer(west_model_ii, "Modell_II_Econ")
 check_ost_niveau(ost_model_ii, "Modell_II_Econ", null_intercept)
 
-# Test 3: Die Konflikttheorie (Wohnen + Ökonomie)
-# Erwartung: Hier sollte der Fehler am kleinsten sein ("Der Gewinner").
+# Test 3: Die Konflikttheorie
 ost_model_iii <- ost_transfer(west_model_iii, "Modell_III_Konflikt")
 check_ost_niveau(ost_model_iii, "Modell_III_Konflikt", null_intercept)
 
@@ -294,27 +289,49 @@ check_ost_niveau(ost_model_gesamt, "Modell_Gesamt", null_intercept)
 # Wir nutzen die Transfer-Modelle und geben das West-Modell als "Elternteil" mit,
 # damit die Vorhersage (Offset) korrekt berechnet werden kann.
 
-# --- Visualisierung Modell I (Kultur) ---
-# Zeigt wahrscheinlich viel "ROT" (Unterschätzung der AfD im gesamten Osten)
-calculate_and_export_residuals(ost_model_i, "ost", "Model_I", west_model = west_model_i)
-plot_residual_histogram(ost_model_i, "ost", "Model_I") # Wie verteilen sich die Fehler?
-plot_transfer_map(west_model_i, data_ost, "Modell_I")  # Wo sind die Fehler? (Karte)
+# --- Modell I (Kultur) ---
+calculate_and_export_residuals(west_model_i, "ost", "Modell_I_Gap_Check")
+plot_residual_histogram(west_model_i, "ost", "Model_I") # Wie verteilen sich die Fehler?
+plot_residual_map(west_model_i, "ost", "Modell_I")
 
-# --- Visualisierung Modell II (Ökonomie) ---
-calculate_and_export_residuals(ost_model_ii, "ost", "Model_II", west_model = west_model_ii)
-plot_residual_histogram(ost_model_ii, "ost", "Model_II")
-plot_transfer_map(west_model_ii, data_ost, "Modell_II")
+# --- Modell II (Ökonomie) ---
+calculate_and_export_residuals(west_model_ii, "ost", "Model_II")
+plot_residual_histogram(west_model_ii, "ost", "Model_II")
+plot_residual_map(west_model_ii, "ost", "Modell_II")
 
-# --- Visualisierung Modell III (Konflikt) ---
+# --- Modell III (Konflikt) ---
 # Hier hoffen wir auf blassere Farben (bessere Erklärungskraft).
-calculate_and_export_residuals(ost_model_iii, "ost", "Model_III", west_model = west_model_iii)
-plot_residual_histogram(ost_model_iii, "ost", "Model_III")
-plot_transfer_map(west_model_iii, data_ost, "Modell_III")
+calculate_and_export_residuals(west_model_iii, "ost", "Model_III")
+plot_residual_histogram(west_model_iii, "ost", "Model_III")
+plot_residual_map(west_model_iii, "ost", "Modell_III")
 
-# --- Visualisierung Gesamtmodell ---
-calculate_and_export_residuals(ost_model_gesamt, "ost", "Model_Gesamt", west_model = west_model_gesamt)
-plot_residual_histogram(ost_model_gesamt, "ost", "Model_Gesamt")
-plot_transfer_map(west_model_gesamt, data_ost, "Modell_Gesamt")
+# --- Gesamtmodell ---
+calculate_and_export_residuals(west_model_gesamt, "ost", "Model_Gesamt")
+plot_residual_histogram(west_model_gesamt, "ost", "Model_Gesamt")
+plot_residual_map(west_model_gesamt, "ost", "Modell_Gesamt")
+
+# ------------------------------------------------------------------------------
+# 5.3 Binnenanalyse Ost
+# ------------------------------------------------------------------------------
+# --- Modell I (Kultur) ---
+calculate_and_export_residuals(ost_model_i, "ost", "Model_I_Binnen",west_model_i)
+plot_residual_histogram(ost_model_i, "ost", "Model_I_Binnen", west_model_i)
+plot_residual_map(ost_model_i, "ost", "Modell_I_Binnen", west_model_i)
+
+# --- Modell II (Ökonomie) ---
+calculate_and_export_residuals(ost_model_ii, "ost", "Model_II_Binnen",west_model_ii)
+plot_residual_histogram(ost_model_ii, "ost", "Model_II_Binnen", west_model_ii)
+plot_residual_map(ost_model_ii, "ost", "Modell_II_Binnen", west_model_ii)
+
+# --- Modell III (Konflikt) ---
+calculate_and_export_residuals(ost_model_iii, "ost", "Model_III_Binnen",west_model_iii)
+plot_residual_histogram(ost_model_iii, "ost", "Model_III_Binnen", west_model_iii)
+plot_residual_map(ost_model_iii, "ost", "Modell_III_Binnen", west_model_iii)
+
+# --- Gesamtmodell ---
+calculate_and_export_residuals(ost_model_gesamt, "ost", "Model_gesamt_Binnen",west_model_gesamt)
+plot_residual_histogram(ost_model_gesamt, "ost", "Model_gesamt_Binnen", west_model_gesamt)
+plot_residual_map(ost_model_gesamt, "ost", "Modell_gesamt_Binnen", west_model_gesamt)
 
 # ******************************************************************************
 # ENDE DES SKRIPTS

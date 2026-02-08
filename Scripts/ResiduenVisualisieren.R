@@ -1,88 +1,81 @@
 # ==============================================================================
-# Funktion: Histogramm der Residuen erstellen und speichern
+# Funktion: plot_residual_histogram (FINAL & FLEXIBEL)
 # ==============================================================================
-# Diese Funktion visualisiert die Verteilung der Modellfehler (Residuen).
-# Schritte:
-# 1. Filtert Daten auf die Zielregion (West oder Ost).
-# 2. Berechnet die Residuen (Differenz zwischen Realität und Modell).
-# 3. Erstellt ein Histogramm mit ggplot2.
-# 4. Speichert die Grafik als PNG, falls der Export aktiviert ist.
+# UPDATE: 
+# Akzeptiert jetzt 'west_model' als optionales Argument.
+# Das ist notwendig, um Histogramme für Transfer-Modelle (mit Offset) zu erstellen.
 # ==============================================================================
 
-plot_residual_histogram <- function(model, region, modelnummer) {
+plot_residual_histogram <- function(model, region, modelnummer, west_model = NULL) {
   
   # ---------------------------------------------------------
   # A. Daten vorbereiten
   # ---------------------------------------------------------
   
   # 0. Region bestimmen
-  # Wir prüfen, ob im Text "west" steht. Falls ja -> 0, sonst -> 1 (für Ost).
   target_ost <- if (grepl("west", tolower(region))) 0 else 1
   
-  # 1. Datensatz filtern & Geometrie entfernen
-  # Wir nutzen data als Argument (sauberer Stil), filtern auf die Region
-  # und entfernen Geometrie für Performance.
+  # 1. Datensatz filtern
   df_plot <- data %>%
     dplyr::filter(ost == target_ost)
   
+  # Geometrie entfernen (Wichtig für Performance bei ggplot histograms)
   if (inherits(df_plot, "sf")) df_plot <- sf::st_drop_geometry(df_plot)
   
-  # 2. Residuen berechnen
-  # Temporäre Berechnung für den Plot
+  # ---------------------------------------------------------
+  # B. Residuen berechnen (Hier ist der FIX!)
+  # ---------------------------------------------------------
+  
+  # SCHRITT B1: Offset berechnen (Nur für Binnen-Modelle nötig)
+  if (!is.null(west_model)) {
+    message("   -> Info: Nutze West-Modell als Offset-Basis für Histogramm.")
+    # Wir berechnen den Anker-Wert (linear_predictor)
+    df_plot$linear_predictor <- predict(west_model, newdata = df_plot, type = "link", allow.new.levels = TRUE)
+  }
+  
+  # SCHRITT B2: Die eigentliche Vorhersage
+  # Wir nutzen 'allow.new.levels = TRUE', damit auch Gap-Checks (West auf Ost) nicht crashen
   df_plot <- df_plot %>%
     dplyr::mutate(
-      pred_temp = predict(model, newdata = ., type = "response"),
+      pred_temp = predict(model, newdata = ., type = "response", allow.new.levels = TRUE),
       resids    = (afd_prop - pred_temp) * 100
     )
   
   # ---------------------------------------------------------
-  # B. Plot erstellen
+  # C. Plot erstellen
   # ---------------------------------------------------------
   
-  # Dynamischer Titel
-  plot_title  <- paste0("Residuen ", modelnummer, " ", region)
+  plot_title  <- paste0("Verteilung der Residuen: ", modelnummer, " (", region, ")")
   
-  # WICHTIG: Variable 'p' nennen, nicht 'plot' (Konflikt mit Base-R)
   p <- ggplot(df_plot, aes(x = resids)) +
+    # Histogramm: Farbe Blau, halbtransparent
     geom_histogram(binwidth = 1, fill = "#6291eb", color = "white", alpha = 0.8) +
     
     # Rote Linie bei 0 (Perfekte Vorhersage)
-    geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+    geom_vline(xintercept = 0, color = "red", linetype = "dashed", size = 1) +
     
     labs(
       title = plot_title,
-      x = "Residuen in Prozentpunkten",
+      subtitle = "Rechts von 0 = Modell unterschätzt AfD | Links von 0 = Modell überschätzt AfD",
+      x = "Abweichung in Prozentpunkten",
       y = "Anzahl Wahlkreise"
     ) +
     theme_minimal()
   
   # ---------------------------------------------------------
-  # C. Speichern (Export)
+  # D. Speichern (Export)
   # ---------------------------------------------------------
   
-  # Prüfung: Ist der Bilder-Export aktiviert?
   if (IS_PLOT_OUTPUT_ENABLED) {
-    
-    # Dateinamen generieren
     dateiname <- paste0("Histogramm_Residuen_", region, "_", modelnummer, ".png")
     speicherpfad <- file.path(EXPORT_PFAD_ABBILDUNGEN, dateiname)
     
-    # Speichern
-    ggsave(filename = speicherpfad, plot = p, width = 8, height = 6, dpi = 300)
-    
-    message(paste0(">>> Histogramm gespeichert: ", speicherpfad))
-    
+    ggsave(filename = speicherpfad, plot = p, width = 8, height = 6, dpi = 300, bg = "white")
+    message(paste0("--- Histogramm gespeichert: ", modelnummer)," ---")
   } else {
-    message("--- Export von Abbildungen deaktiviert ---")
+    message("--- Export deaktiviert ---")
   }
   
-  # ---------------------------------------------------------
-  # D. Anzeige und Return
-  # ---------------------------------------------------------
-  
-  # Plot im RStudio-Fenster anzeigen
   print(p)
-  
-  # "Unsichtbare NULL" zurückgeben
   return(invisible(NULL))
 }
