@@ -102,6 +102,51 @@ bivariate_analysen_to_run <- list(
   der_Empfängerinnen_von_Sozialleistungen = list(
     grouping_variable = "ost",
     target_variables  = c("sgb2_nichterw")
+  ),
+  # E) Konfession
+  der_Konfession = list(
+    grouping_variable = "ost",
+    target_variables = c("evang", "kath")
+  ),
+  # F) Wandersaldo
+  des_Wandersaldo = list(
+    grouping_variable = "ost",
+    target_variables = c("wandssaldo")
+  ),
+  # G) Geburtensaldo
+  des_Geburtensaldo = list(
+    grouping_variable = "ost",
+    target_variables = c("gebursaldo")
+  ),
+  # H) Einkommen
+  des_Einkommen = list(
+    grouping_variable = "ost",
+    target_variables = c("einkommen")
+  ),
+  # I) Migration
+  der_Migration = list(
+    grouping_variable = "ost",
+    target_variables = c("migration")
+  ),
+  # J) Wohnbestand
+  des_Wohnbestands = list(
+    grouping_variable = "ost",
+    target_variables = c("wohnbestand")
+  ), 
+  # K) Konfession und Bildung
+  der_Konfesstion_und_Bildung = list(
+    grouping_variable = "ost",
+    target_variables = c("evang", "kath", "bildung_hoch")
+  ), 
+  # L) Demografischer Wandel und ökonomische Deprivation
+  des_Demografischen_Wandels_und_ökonomische_Deprivation = list(
+    grouping_variable = "ost",
+    target_variables = c("einkommen", "gebursaldo", "wandssaldo")
+  ), 
+  # M) Konkurrenz-Hypothese
+  der_Konkurrenz_Hypothese = list(
+    grouping_variable = "ost",
+    target_variables = c("einkommen", "wohnbestand", "migration")
   )
 )
 
@@ -132,6 +177,18 @@ plot_multiple_density(data, vars_sozio, "ost", "Bevölkerungsentwicklung")
 # Religion
 vars_sozio <- c("kath", "evang")
 plot_multiple_density(data, vars_sozio, "ost", "Religion")
+
+# Konfession und Bildung
+vars_sozio <- c("kath", "evang", "bildung_niedrig")
+plot_multiple_density(data, vars_sozio, "ost", "Konfession und Bildung")
+
+# Demografischer Wandel und ökonomische Deprivation
+vars_sozio <- c("gebursaldo", "wandssaldo", "einkommen")
+plot_multiple_density(data, vars_sozio, "ost", "Demografischer Wandel und ökonomische Deprivation")
+
+# Konkurrenz-Hypothese
+vars_sozio <- c("migration", "wohnbestand", "einkommen")
+plot_multiple_density(data, vars_sozio, "ost", "Konkurrenz-Hypothese")
 
 
 # ------------------------------------------------------------------------------

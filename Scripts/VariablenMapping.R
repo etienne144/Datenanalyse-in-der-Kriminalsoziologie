@@ -25,7 +25,11 @@ KLARNAMEN <- c(
   "arblQuote_senioren" = "Senioren",
   "gebursaldo" = "Geburtensaldo",
   "wandssaldo" = "Wanderungssaldo",
-  "bip_je_einwohner" = "Durchschn. BIP je Einwohner"
+  "bip_je_einwohner" = "Durchschn. BIP je Einwohner",
+  "evang" = "Evangelisch",
+  "kath" = "Katholisch",
+  "migration" = "Migration",
+  "wohnbestand" = "Wohnbestand"
 )
 
 # 2. Klartextnamen für alle Gruppierungsvariablen (Grouping-Variablen)
