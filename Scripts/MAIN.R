@@ -273,6 +273,7 @@ visualize_west_diagnostics(west_model_gesamt, "Modell_gesamt")
 # ------------------------------------------------------------------------------
 # Wir berechnen die Abweichung (Residuum) zwischen der Modell-Vorhersage
 # und dem tatsächlichen Wahlergebnis.
+
 # --- Analyse Modell I ---
 calculate_and_export_residuals(west_model_i, "west", "Model_I")
 plot_residual_histogram(west_model_i, "west", "Model_I")
@@ -293,8 +294,6 @@ calculate_and_export_residuals(west_model_gesamt,"west", "Model_gesamt")
 plot_residual_histogram(west_model_gesamt, "west", "Model_gesamt")
 plot_residual_map(west_model_gesamt, "west", "Modell_gesamt")
 
-
-
 # ==============================================================================
 # 5. TRANSFERANALYSE
 # ==============================================================================
@@ -314,6 +313,9 @@ ost_null_model <- calculate_null_model()
 # Wir speichern uns diesen "Basis-Wert" als Anker für alle Vergleiche
 null_intercept <- fixef(ost_null_model)$cond["(Intercept)"]
 check_ost_niveau(ost_null_model, "Nullmodell", null_intercept)
+
+#BinnenResiduen mit Nullmodell
+calculate_and_export_residuals(ost_null_model,"ost","Nullmodell_Benchmark")
 
 
 # B. Die Modelle testen (Struktur vs. Kultur)
