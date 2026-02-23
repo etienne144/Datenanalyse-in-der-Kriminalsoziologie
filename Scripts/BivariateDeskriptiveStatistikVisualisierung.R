@@ -177,8 +177,8 @@ plot_multiple_density <- function(df, target_variables, grouping_variable, analy
     ggplot2::labs(
       title = title_str,
       subtitle = subtitle_str,
-      x = paste0("Wert (", y_einheit, ")"),
-      y = "Dichte (Häufigkeit)",
+      x = paste0("Wert"),
+      y = "Dichte",
       fill = fill_label,
       color = fill_label
     ) +
@@ -203,7 +203,7 @@ plot_multiple_density <- function(df, target_variables, grouping_variable, analy
     
     # Speicher-Logik
     file_path <- file.path(EXPORT_PFAD_ABBILDUNGEN, paste0("Dichte_", analyse_name_str, ".png"))
-    ggplot2::ggsave(file_path, plot = density_plot, width = 20, height = 14, units = "cm", dpi = 300)
+    ggplot2::ggsave(file_path, plot = density_plot, width = 20, height = 14, units = "cm", dpi = 600)
   }
   
   return(invisible(density_plot))

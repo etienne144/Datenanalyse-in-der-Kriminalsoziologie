@@ -73,6 +73,13 @@ calculate_and_export_residuals <- function(model, region, modelnummer, west_mode
     Kennzahl = names(sum_obj),
     Wert     = as.numeric(sum_obj)
   )
+  sd_val <- sd(res_values, na.rm = TRUE)
+  
+  # Wir fügen die SD als neue Zeile unten an
+  stats_summary <- rbind(stats_summary, data.frame(
+    Kennzahl = "Std. Dev.",
+    Wert     = sd_val
+  ))
   
   # Liste für Excel
   output_list <- list(

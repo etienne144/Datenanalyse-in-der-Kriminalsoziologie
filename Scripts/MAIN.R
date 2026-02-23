@@ -228,7 +228,7 @@ plot_region_correlation(vars_model_II, "west", "Variablen Modell_II")
 vars_model_III <- c("wohnbestand", "wohnbestand_sq", "ausl_proz", "einkommen", "einkommen_sq")
 plot_region_correlation(vars_model_III, "west", "Variablen Modell_III")
 
-vars_model_gesamt <- c("bildung_niedrig", "kath", "evang", "kath_sq", "evang_sq","gebursaldo", "einkommen", "einkommen_sq","wohnbestand", "wohnbestand_sq")
+vars_model_gesamt <- c("bildung_niedrig", "kath", "evang", "kath_sq", "evang_sq","gebursaldo", "einkommen", "einkommen_sq","wohnbestand")
 plot_region_correlation(vars_model_gesamt, "west", "Variablen Modell_gesamt")
 # ------------------------------------------------------------------------------
 # 3.5 Extrapolations-Check (Support Overlap)
@@ -253,19 +253,19 @@ data <- datensatz_vorbereiten_regression(data)
 # ------------------------------------------------------------------------------
 
 # --- Modell I (Kultur & Bildung) ---
-west_model_i <- fit_west_model(vars_model_I, model_label = "Modell_I")
+west_model_i <- fit_west_model(vars_model_I, "Modell_I")
 visualize_west_diagnostics(west_model_i, "Modell_I")
 
 # --- Modell II (Sozioökonomie) ---
-west_model_ii <- fit_west_model(vars_model_II, model_label = "Modell_II")
+west_model_ii <- fit_west_model(vars_model_II, "Modell_II")
 visualize_west_diagnostics(west_model_ii, "Modell_II")
 
 # --- Modell III (Wohnraum & Konflikt) ---
-west_model_iii <- fit_west_model(vars_model_III, model_label = "Modell_III")
+west_model_iii <- fit_west_model(vars_model_III, "Modell_III")
 visualize_west_diagnostics(west_model_iii, "Modell_III")
 
 # --- Gesamtmodell ---
-west_model_gesamt <- fit_west_model(vars_model_gesamt, model_label = "Modell_gesamt")
+west_model_gesamt <- fit_west_model(vars_model_gesamt, "Modell_gesamt")
 visualize_west_diagnostics(west_model_gesamt, "Modell_gesamt")
 
 # ------------------------------------------------------------------------------
@@ -329,11 +329,11 @@ ost_model_i <- ost_transfer(west_model_i, "Modell_I")
 check_ost_niveau(ost_model_i, "Modell_I", null_intercept)
 
 # Test 2: Reicht Bevölkerungsentiwcklung?
-ost_model_ii <- ost_transfer(west_model_ii, "Modell_II_Econ")
+ost_model_ii <- ost_transfer(west_model_ii, "Modell_II")
 check_ost_niveau(ost_model_ii, "Modell_II_Econ", null_intercept)
 
 # Test 3: Die Konflikttheorie
-ost_model_iii <- ost_transfer(west_model_iii, "Modell_III_Konflikt")
+ost_model_iii <- ost_transfer(west_model_iii, "Modell_III")
 check_ost_niveau(ost_model_iii, "Modell_III_Konflikt", null_intercept)
 
 # Test 4: Das Gesamtmodell (Alles zusammen)
